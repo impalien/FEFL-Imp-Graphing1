@@ -1,0 +1,110 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Football Scatter Maker</title>
+<style>
+:root{--bg:#0b0e14;--p:#141923;--b:#262d3a;--t:#e8ecf2;--m:#8b95a5;--a:#00ff99;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--t);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1200px;margin:0 auto;padding:12px;display:grid;gap:12px}
+@media(min-width:900px){main{grid-template-columns:1fr 440px;align-items:start}#cw{position:sticky;top:12px}}
+canvas{width:100%;height:auto;display:block;border-radius:10px;border:1px solid var(--b)}
+details{background:var(--p);border:1px solid var(--b);border-radius:10px;margin-bottom:10px}
+summary{padding:12px 14px;font-weight:700;cursor:pointer}
+.in{padding:0 14px 14px}
+label{display:block;font-size:12px;color:var(--m);margin:8px 0 3px}
+input,select,textarea{width:100%;background:#0b0e14;color:var(--t);border:1px solid var(--b);border-radius:8px;padding:9px;font:inherit;min-width:0}
+input[type=checkbox]{width:auto}
+input[type=color]{padding:2px;height:36px;width:44px;flex:none}
+input[type=range]{padding:0}
+.r{display:flex;gap:8px;align-items:flex-end}.r>*{flex:1;min-width:0}
+.ck{display:flex;align-items:center;gap:6px;color:var(--t);font-size:14px}
+.dl{width:64px;margin:0;font-size:13px;color:var(--m)}
+button{background:#1d2431;color:var(--t);border:1px solid var(--b);border-radius:8px;padding:10px 14px;font:inherit;cursor:pointer}
+.pri{background:var(--a);color:#04140c;font-weight:700;border:0}
+.card{border:1px solid var(--b);border-radius:10px;padding:10px;margin-bottom:10px;background:#10151e}
+.dr{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
+.sw{width:26px;height:26px;border-radius:50%;padding:0;flex:none;border:2px solid #fff4}
+#ov{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;padding:16px;z-index:9}
+#ov img{max-width:100%;max-height:78%;border-radius:8px}
+</style></head><body><div id="nojs" style="background:#ff2d55;color:#fff;padding:10px 14px;font:14px sans-serif">Scripts are blocked in this viewer, so the chart cannot load. Open the file in Chrome instead.</div><main>
+<div id="cw"><canvas id="cv" width="2000" height="2200"></canvas><button class="pri" id="sv" style="width:100%;margin-top:10px">Save image</button></div>
+<div>
+<details open><summary>Players</summary><div class="in"><div id="pl"></div><div class="r"><button class="pri" id="add">+ Add player</button><button id="clr" style="flex:none">Clear all</button></div></div></details>
+<details><summary>Axes</summary><div class="in" id="ax"></div></details>
+<details><summary>Quadrants</summary><div class="in"><label class="ck"><input type="checkbox" data-k="quad"> Show quadrants and divider lines</label><label>Top left</label><input data-k="q0"><label>Top right</label><input data-k="q1"><label>Bottom left</label><input data-k="q2"><label>Bottom right</label><input data-k="q3"><label>Use / for a new line. Dividers sit at the average of the players unless you set a divider value under Axes.</label></div></details>
+<details><summary>Colours and legend</summary><div class="in"><label class="ck"><input type="checkbox" data-k="leg"> Show legend</label><label>Legend title</label><input data-k="lt"><label>Position</label><select data-k="lp"><option value="bl">Bottom left</option><option value="br">Bottom right</option><option value="tl">Top left</option><option value="tr">Top right</option></select><label>Change a colour here and every dot using it updates. Clear a label to hide its row.</label><div id="pal"></div></div></details>
+<details><summary>Text and style</summary><div class="in"><label>Title</label><input data-k="title"><label>Footnote (one line per row)</label><textarea rows="3" data-k="foot"></textarea><label>Dot size</label><input type="range" min="12" max="34" data-n data-k="ds"></div></details>
+</div></main>
+<div id="ov"><img id="oi" alt="Chart"><span style="color:#8b95a5">Long-press the image to save it</span><button id="cl">Close</button></div>
+<script>window.onerror=function(m,u,l){var d=document.createElement('div');d.style.cssText='background:#ff2d55;color:#fff;padding:8px 12px;font:13px sans-serif';d.textContent='Error: '+m+' (line '+l+')';document.body.insertBefore(d,document.body.firstChild)};var nj=document.getElementById('nojs');if(nj)nj.style.display='none';</script>
+<script>
+var $=function(i){return document.getElementById(i)},cv=$('cv'),pl=$('pl'),add=$('add'),clr=$('clr'),ax=$('ax'),pal=$('pal'),sv=$('sv'),ov=$('ov'),oi=$('oi'),cl=$('cl'),nz=function(a,b){return a==null?b:a};
+const PC=['#00ff99','#8fff00','#ffe600','#ff9500','#ff2d55'],PL=['1 - Very High / Easy Game','2 - High / Moderate Game','3 - Average Game','4 - Low Game','5 - Very Low / Difficult Game'],
+F='"Segoe UI",Helvetica,Arial,sans-serif',QC=['#ffffff','#00ff99','#ff2d55','#ff9500'],TN=['255,255,255,.05','0,255,153,.08','255,45,85,.08','255,149,0,.08'],
+POS=[['t','Above'],['b','Below'],['l','Left'],['r','Right']],
+P0=[['Kant\u00e9',55.5,122,1,1,'t'],['Moylan',47.5,113,3,2,'t'],['Azaz',40,112,2,1,'t'],['Cozier-Durberry',32,70,0,1,'t'],['Russel',23,91,2,0,'t'],['Moriah-Welsh',28.5,101,2,0,'b'],['Hackett',40,152,2,0,'l'],['Palmer',36,156,1,2,'t'],['Galbraith',32,168,1,1,'r'],['Price',40,183,3,1,'b'],['Berhalter',25,272,0,1,'t'],['Cantwell',28,313,3,1,'b']];
+let S={title:'Gameweek 12 Midfielders Analysis',xl:'Minutes per Key Pass or Interception  (Lower = Higher Floor \u2192)',yl:'Minutes per Goal Involvement  (Lower = Higher Ceiling \u2191)',
+xmin:15,xmax:65,ymin:0,ymax:400,xrev:true,yrev:true,xs:null,ys:null,quad:true,
+q0:'HIGHER CEILING/LOWER FLOOR',q1:'HIGHER CEILING/HIGHER FLOOR',q2:'LOWER CEILING/LOWER FLOOR',q3:'LOWER CEILING/HIGHER FLOOR',
+leg:true,lt:'Next 2 Fixtures/Difficulty Rating',lp:'bl',ds:20,
+foot:'Each player has two dots: left dot = next fixture, right dot = the fixture after.\nDashed lines = average of the players shown.',
+pal:PC.map((c,i)=>({c,l:PL[i]})),players:P0.map(([n,x,y,a,b,pos])=>({n,x,y,c1:PC[a],c2:PC[b],two:true,pos}))};
+try{const j=localStorage.getItem('fsm1');if(j)S=Object.assign(S,JSON.parse(j))}catch(e){}
+const c=cv.getContext('2d'),esc=s=>String(nz(s,'')).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])),av=a=>a.reduce((s,v)=>s+v,0)/a.length,
+ft=(t,x,y,m,z,w='')=>{let s=z;do{c.font=w+(s--)+'px '+F}while(c.measureText(t).width>m&&s>12);c.fillText(t,x,y)},
+tk=(a,b)=>{const s=(b-a)/6,m=Math.pow(10,Math.floor(Math.log10(s))),n=s/m,st=(n<1.5?1:n<3.5?2:n<7.5?5:10)*m,r=[];for(let v=Math.ceil(a/st)*st;v<=b+1e-9;v+=st)r.push(+v.toPrecision(12));return r},
+ln=s=>s.split('/').map(t=>t.trim()).filter(Boolean);
+function draw(){
+const W=1000,H=1100,L=115,R=965,T=105,B=870,pw=R-L,ph=B-T;
+c.setTransform(2,0,0,2,0,0);c.fillStyle='#0b0e14';c.fillRect(0,0,W,H);
+c.textAlign='center';c.textBaseline='middle';c.fillStyle='#fff';ft(S.title,W/2,52,W-60,46,'bold ');
+const ps=S.players.filter(p=>p.x!=null&&p.y!=null);
+const rg=(lo,hi,v)=>{let a=Math.min(...v),b=Math.max(...v);if(!v.length)a=0,b=10;if(a==b)a--,b++;const d=(b-a)*.12;a=nz(lo,a-d);b=nz(hi,b+d);return b>a?[a,b]:[a,a+1]};
+const[x0,x1]=rg(S.xmin,S.xmax,ps.map(p=>p.x)),[y0,y1]=rg(S.ymin,S.ymax,ps.map(p=>p.y));
+const mx=v=>S.xrev?R-(v-x0)/(x1-x0)*pw:L+(v-x0)/(x1-x0)*pw,my=v=>S.yrev?T+(v-y0)/(y1-y0)*ph:B-(v-y0)/(y1-y0)*ph;
+c.fillStyle='#12161e';c.fillRect(L,T,pw,ph);
+const sx=nz(S.xs,ps.length?av(ps.map(p=>p.x)):(x0+x1)/2),sy=nz(S.ys,ps.length?av(ps.map(p=>p.y)):(y0+y1)/2),
+px=Math.min(R,Math.max(L,mx(sx))),py=Math.min(B,Math.max(T,my(sy)));
+if(S.quad)[[L,T,px,py],[px,T,R,py],[L,py,px,B],[px,py,R,B]].forEach(([a,b,e,f],i)=>{c.fillStyle='rgba('+TN[i]+')';c.fillRect(a,b,e-a,f-b)});
+c.strokeStyle='#1e2532';c.lineWidth=1.5;c.fillStyle='#e8ecf2';c.font='26px '+F;
+c.textAlign='center';c.textBaseline='top';
+tk(x0,x1).forEach(v=>{const p=mx(v);c.beginPath();c.moveTo(p,T);c.lineTo(p,B);c.stroke();c.fillText(v,p,B+10)});
+c.textAlign='right';c.textBaseline='middle';
+tk(y0,y1).forEach(v=>{const p=my(v);c.beginPath();c.moveTo(L,p);c.lineTo(R,p);c.stroke();c.fillText(v,L-10,p)});
+c.strokeStyle='#3a4251';c.lineWidth=2;c.strokeRect(L,T,pw,ph);
+if(S.quad){c.setLineDash([12,9]);c.strokeStyle='#8b95a5';c.lineWidth=3;c.beginPath();c.moveTo(px,T);c.lineTo(px,B);c.moveTo(L,py);c.lineTo(R,py);c.stroke();c.setLineDash([])}
+const r=S.ds,d=r*.72;
+ps.forEach(p=>{const X=mx(p.x),Y=my(p.y);(p.two?[[X-d,p.c1],[X+d,p.c2]]:[[X,p.c1]]).forEach(([x,k])=>{c.beginPath();c.arc(x,Y,r,0,7);c.fillStyle=k;c.fill();c.lineWidth=3;c.strokeStyle='#fff';c.stroke()})});
+c.lineJoin='round';c.lineWidth=7;c.font='bold 30px '+F;
+ps.forEach(p=>{if(!p.n)return;const X=mx(p.x),Y=my(p.y),h=p.two?d:0,o=p.pos;let x=X,y=Y,a='center',b='middle';
+if(o=='t'){y=Y-r-8;b='bottom'}else if(o=='b'){y=Y+r+8;b='top'}else if(o=='l'){x=X-h-r-12;a='right'}else{x=X+h+r+12;a='left'}
+c.textAlign=a;c.textBaseline=b;c.strokeStyle='rgba(11,14,20,.9)';c.strokeText(p.n,x,y);c.fillStyle='#fff';c.fillText(p.n,x,y)});
+if(S.quad)[0,1,2,3].forEach(i=>{const ls=ln(S['q'+i]);if(!ls.length)return;c.font='bold 22px '+F;
+const w=Math.max(...ls.map(s=>c.measureText(s).width))+28,h=ls.length*29+14,x=i%2?R-12-w:L+12,y=i<2?T+12:B-12-h;
+c.fillStyle='rgba(11,14,20,.88)';c.fillRect(x,y,w,h);c.strokeStyle=QC[i];c.lineWidth=3;c.strokeRect(x,y,w,h);
+c.fillStyle=QC[i];c.textBaseline='top';c.textAlign=i%2?'right':'left';ls.forEach((s,k)=>c.fillText(s,i%2?x+w-14:x+14,y+9+k*29))});
+if(S.leg){const rw=S.pal.filter(q=>q.l.trim()),tl=ln(S.lt);c.font='bold 22px '+F;let w=Math.max(0,...tl.map(s=>c.measureText(s).width));
+c.font='22px '+F;w=Math.max(w,...rw.map(q=>c.measureText(q.l).width+36))+36;
+const h=tl.length*28+rw.length*34+26,x=S.lp[1]=='l'?L+14:R-14-w,y=S.lp[0]=='t'?T+88:B-88-h;
+c.fillStyle='rgba(11,14,20,.92)';c.fillRect(x,y,w,h);c.strokeStyle='#3a4251';c.lineWidth=2;c.strokeRect(x,y,w,h);
+c.fillStyle='#fff';c.font='bold 22px '+F;c.textAlign='center';c.textBaseline='middle';tl.forEach((s,k)=>c.fillText(s,x+w/2,y+22+k*28));
+c.textAlign='left';c.font='22px '+F;
+rw.forEach((q,k)=>{const yy=y+tl.length*28+30+k*34;c.beginPath();c.arc(x+30,yy,11,0,7);c.fillStyle=q.c;c.fill();c.lineWidth=2;c.strokeStyle='#fff';c.stroke();c.fillStyle='#e8ecf2';c.fillText(q.l,x+54,yy)})}
+c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';ft(S.xl,(L+R)/2,B+82,pw,30,'bold ');
+c.save();c.translate(34,(T+B)/2);c.rotate(-Math.PI/2);ft(S.yl,0,0,ph,30,'bold ');c.restore();
+const fl=S.foot.split('\n');c.fillStyle='#8b95a5';fl.forEach((s,k)=>ft(s,W/2,H-16-(fl.length-1-k)*28,W-50,21));
+}
+const go=()=>{draw();try{localStorage.setItem('fsm1',JSON.stringify(S))}catch(e){}};
+const dr=(i,k,p)=>`<div class="dr">${k==1?'<b class="dl">Dot 1</b>':`<label class="ck dl"><input type="checkbox" data-i="${i}" data-f="two"${p.two?' checked':''}>Dot 2</label>`}${S.pal.map(q=>`<button class="sw" style="background:${q.c}" data-i="${i}" data-f="c${k}" data-v="${q.c}"></button>`).join('')}<input type="color" value="${p['c'+k]}" data-i="${i}" data-f="c${k}"></div>`;
+function render(){pl.innerHTML=S.players.map((p,i)=>`<div class="card"><div class="r"><input data-i="${i}" data-f="n" value="${esc(p.n)}" placeholder="Player name"><button data-del="${i}" style="flex:none">&#10005;</button></div>
+<div class="r"><div><label>X</label><input type="number" step="any" inputmode="decimal" data-i="${i}" data-f="x" value="${nz(p.x,'')}"></div><div><label>Y</label><input type="number" step="any" inputmode="decimal" data-i="${i}" data-f="y" value="${nz(p.y,'')}"></div><div><label>Name</label><select data-i="${i}" data-f="pos">${POS.map(([v,t])=>`<option value="${v}"${p.pos==v?' selected':''}>${t}</option>`).join('')}</select></div></div>${dr(i,1,p)}${dr(i,2,p)}</div>`).join('')}
+pl.oninput=e=>{const t=e.target,i=t.dataset.i;if(i==null)return;S.players[i][t.dataset.f]=t.type=='checkbox'?t.checked:t.type=='number'?(t.value===''?null:+t.value):t.value;go()};
+pl.onclick=e=>{const t=e.target.closest('button');if(!t)return;if(t.dataset.del!=null)S.players.splice(t.dataset.del,1);else if(t.dataset.v)S.players[t.dataset.i][t.dataset.f]=t.dataset.v;else return;render();go()};
+add.onclick=()=>{S.players.push({n:'',x:null,y:null,c1:S.pal[1].c,c2:S.pal[1].c,two:true,pos:'t'});render();go()};
+clr.onclick=()=>{if(clr.dataset.s){S.players=[];render();go();clr.textContent='Clear all';delete clr.dataset.s}else{clr.dataset.s=1;clr.textContent='Tap again to clear';setTimeout(()=>{delete clr.dataset.s;clr.textContent='Clear all'},3000)}};
+ax.innerHTML=['x','y'].map(a=>`<label>${a.toUpperCase()} axis label</label><input data-k="${a}l"><div class="r">${[['min','Min','auto'],['max','Max','auto'],['s','Divider','avg']].map(([k,t,h])=>`<div><label>${t}</label><input type="number" step="any" inputmode="decimal" data-n data-k="${a}${k}" placeholder="${h}"></div>`).join('')}</div><label class="ck"><input type="checkbox" data-k="${a}rev"> Flip ${a.toUpperCase()} axis (low values ${a=='x'?'on the right':'at the top'})</label>`).join('<hr style="border:0;border-top:1px solid var(--b);margin:14px 0">');
+document.querySelectorAll('[data-k]').forEach(e=>{const k=e.dataset.k;if(e.type=='checkbox')e.checked=!!S[k];else e.value=nz(S[k],'');e.oninput=()=>{S[k]=e.type=='checkbox'?e.checked:'n' in e.dataset?(e.value===''?null:+e.value):e.value;go()}});
+pal.innerHTML=S.pal.map((q,i)=>`<div class="r" style="margin-top:8px"><input type="color" data-p="${i}" value="${q.c}"><input data-p="${i}" value="${esc(q.l)}" placeholder="Legend label"></div>`).join('');
+pal.oninput=e=>{const t=e.target,i=t.dataset.p;if(i==null)return;const q=S.pal[i];if(t.type=='color'){S.players.forEach(p=>['c1','c2'].forEach(k=>{if(p[k]==q.c)p[k]=t.value}));q.c=t.value;render()}else q.l=t.value;go()};
+sv.onclick=()=>{oi.src=cv.toDataURL('image/png');ov.style.display='flex'};cl.onclick=()=>ov.style.display='none';
+render();draw();
+</script></body></html>
