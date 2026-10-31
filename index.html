@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Football Scatter & Chart Maker</title>
+<style>
+:root{--bg:#0b0e14;--p:#141923;--b:#262d3d;--t:#e8ecf2;--m:#8b94a5;--a:#39ff14}
+html{scroll-padding-top:env(safe-area-inset-top)}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--t);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:1200px;margin:0 auto;padding:16px;display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:900px){main{grid-template-columns:minmax(0,1fr) 420px}}
+canvas{width:100%;height:auto;display:block;background:#12161e;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+details{background:var(--p);border:1px solid var(--b);border-radius:10px;margin-bottom:12px;overflow:hidden}
+details[hidden]{display:none}
+summary{padding:12px 14px;font-weight:700;cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:between}
+.in{padding:0 14px 14px}
+label{display:block;font-size:12px;color:var(--m);margin:10px 0 4px;font-weight:600}
+input,select,textarea{width:100%;background:#1b2230;border:1px solid var(--b);border-radius:6px;color:var(--t);padding:10px;font-size:14px;outline:0}
+input[type=checkbox]{width:auto}
+input[type=color]{padding:2px;height:36px;cursor:pointer}
+input[type=range]{padding:0}
+.r{display:flex;gap:8px;align-items:flex-end;margin-bottom:8px}
+.ck{display:flex;align-items:center;gap:6px;font-size:13px;margin:8px 0}
+.dl{width:64px;margin:0;font-size:13px;color:var(--m);text-align:center}
+button{background:#1d2431;color:var(--t);border:1px solid var(--b);border-radius:6px;padding:10px 14px;font-size:14px;font-weight:600;cursor:pointer}
+button:active{transform:scale(0.98)}
+.pri{background:var(--a);color:#04140c;border:0}
+.sw{width:26px;height:26px;border-radius:50%;border:2px solid #fff;cursor:pointer;padding:0;flex:none}
+.dr{display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap}
+.seg{display:flex;gap:6px;margin-bottom:10px}.seg button{flex:1;padding:10px 2px;font-size:13px;min-width:0}
+.cb{display:flex;gap:6px;align-items:stretch}.cb>input{flex:1;min-width:0}.stk{flex:1.7;min-width:0}
+select.pop{flex:none;width:46px;padding:0;text-align:center;font-size:20px;color:var(--a);cursor:pointer;-webkit-appearance:none;appearance:none}
+.xb{flex:none;padding:0 12px}
+main.calc{grid-template-columns:minmax(0,760px);justify-content:center}
+.calc h2{margin:2px 0 6px;font-size:20px}.cn{color:var(--m);font-size:13px;margin:0 0 10px}
+.box{background:#10151e;border:1px solid var(--b);border-radius:6px;padding:12px;margin-bottom:12px}
+.box h3{margin:14px 0 8px;font-size:15px;color:var(--a)}.box h3:first-child{margin-top:0}
+.cr{display:grid;grid-template-columns:1fr 132px;gap:8px;align-items:center;margin-bottom:8px}
+.cr span{font-size:14px}.cr small{display:block;color:var(--m);font-size:11px;line-height:1.25}
+.btns{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.go{background:var(--a);color:#04140c;font-weight:700;padding:12px 24px;border:0;font-size:16px}
+.gr{background:#4a5160;color:#d5dbe6;border:0;padding:12px 20px}
+.res{border:1px solid var(--b);border-radius:10px;padding:12px;margin-top:12px;background:#10151e}
+.res h4{margin:0 0 10px;font-size:15px}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;text-align:center}
+.tile b{display:inline-flex;width:58px;height:58px;border-radius:50%;align-items:center;justify-content:center;font-size:28px;color:#06100a;border:3px solid #fff}
+.tile span{display:block;font-weight:700;margin-top:6px}.tile i{display:block;font-size:12px;color:var(--m);font-style:normal}
+.big{font-size:46px;font-weight:800;color:var(--a);line-height:1.1}
+.err{color:#ff6b81;font-size:13px;margin:6px 0}.okm{color:var(--a);font-size:13px;margin-top:8px}
+table.bk{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}table.bk td{padding:5px 0;border-bottom:1px solid var(--b)}table.bk td:last-child{text-align:right;font-weight:700;padding-left:10px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:#1d2431;border:1px solid var(--b);border-radius:20px;padding:4px 10px;margin:6px 6px 0 0;font-size:13px}
+.how{font-size:12px;color:var(--m);margin-top:10px}.how summary{padding:6px 0;font-weight:600}
+</style>
+</head>
+<body>
+<main id="mn">
+<div>
+  <div class="seg" id="tp"><button data-t="scatter">Scatter</button><button data-t="bar">Bar</button><button data-t="radar">Radar</button><button data-t="fix">Fixtures</button><button data-t="xpts">xPts</button></div>
+  <div class="calc" id="fx" data-t="fix" hidden></div>
+  <div class="calc" id="xp" data-t="xpts" hidden></div>
+  <div id="cw">
+    <canvas id="cv" width="1200" height="1200"></canvas>
+    <div style="display:flex;gap:10px;margin-top:10px">
+      <button class="pri" id="dl" style="flex:1">Save image</button>
+      <button id="rst">Reset defaults</button>
+    </div>
+  </div>
+</div>
+<div id="cfg">
+  <details open data-t="scatter bar radar"><summary>Players</summary><div class="in" id="rm"></div><button id="add" style="width:100%;margin-top:6px">+ Add player</button></details>
+  <details data-t="scatter"><summary>Axes</summary><div class="in">
+    <label>X-axis label</label><div class="cb" data-nk="xl"><input data-k="xl" data-pop="axis" data-x></div>
+    <label>Y-axis label</label><div class="cb" data-nk="yl"><input data-k="yl" data-pop="axis" data-x></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><label>Min X</label><input type="number" step="any" data-k="xmin"></div>
+      <div><label>Max X</label><input type="number" step="any" data-k="xmax"></div>
+      <div><label>Min Y</label><input type="number" step="any" data-k="ymin"></div>
+      <div><label>Max Y</label><input type="number" step="any" data-k="ymax"></div>
+    </div>
+    <label class="ck"><input type="checkbox" data-k="xrev"> Flip X-axis (lower is right)</label>
+    <label class="ck"><input type="checkbox" data-k="yrev"> Flip Y-axis (lower is top)</label>
+  </div></details>
+  <details data-t="bar"><summary>Bars</summary><div class="in">
+    <label>Bar style</label><select data-k="bd"><option value="single">Single bars (one neon colour each)</option><option value="double">Double bars (two touching bars per player)</option></select>
+    <label>Double bars: first bar name</label><input data-k="ba" placeholder="e.g. Goals">
+    <label>First bar colour</label><div class="dr" data-nk="ca"><input type="color" data-k="ca"></div>
+    <label>Double bars: second bar name</label><input data-k="bb" placeholder="e.g. Assists">
+    <label>Second bar colour</label><div class="dr" data-nk="cb"><input type="color" data-k="cb"></div>
+    <label>Single bars: value to plot</label>
+    <div class="seg"><button data-bv="x">X value</button><button data-bv="y">Y value</button></div>
+    <label>Sort order</label>
+    <div class="seg"><button data-bs="desc">Highest first</button><button data-bs="asc">Lowest first</button><button data-bs="none">Custom order</button></div>
+    <label>X-axis label (bottom)</label><div class="cb"><input data-k="bl" data-pop="axis" data-x></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+      <div><label>Min value (auto if blank)</label><input type="number" step="any" data-k="bmin"></div>
+      <div><label>Max value (auto if blank)</label><input type="number" step="any" data-k="bmax"></div>
+    </div>
+  </div></details>
+  <details id="dRm" data-t="radar"><summary>Radar metrics</summary><div class="in" id="rmr"></div><button id="addm" style="width:100%;margin-top:6px">+ Add metric</button></details>
+  <details data-t="scatter bar radar"><summary>Text and style</summary><div class="in">
+    <label>Title</label><div class="cb"><input data-k="title" data-pop="title" data-x></div>
+    <label>Subtitle / legend text</label><div class="cb"><input data-k="leg" data-pop="leg" data-x></div>
+    <label>Quadrants (Scatter)</label>
+    <div class="cb"><input data-k="q0" data-pop="quad" data-x></div>
+    <div class="cb"><input data-k="q1" data-pop="quad" data-x></div>
+    <div class="cb"><input data-k="q2" data-pop="quad" data-x></div>
+    <div class="cb"><input data-k="q3" data-pop="quad" data-x></div>
+    <label>Tap the ✕ to remove a label from the chart, or the ▾ to pick a popular one. You can always type your own. Use / for a new line.</label>
+  </div></details>
+  <details id="dIn" data-t="scatter bar radar"><summary>Insights & Spotlight</summary><div class="in" id="ins"></div></details>
+  <details data-t="scatter bar radar"><summary>Export caption</summary><div class="in">
+    <textarea id="cap" rows="5" style="font-size:13px;resize:vertical"></textarea>
+    <button id="cp" style="width:100%;margin-top:8px">Copy caption</button>
+  </div></details>
+</div>
+</main>
+<script>
+const NEON=['#39ff14','#00f0ff','#ff007f','#ffe600','#bf00ff','#ff5500','#00ffaa','#ff0055'];
+const PAL=[{c:'#39ff14',t:'#04140c'},{c:'#00f0ff',t:'#041014'},{c:'#ffe600',t:'#141200'},{c:'#ff5500',t:'#140800'},{c:'#ff0055',t:'#140005'}];
+const $ = id => document.getElementById(id);
+const nz = (v,d) => v==null||v===''||isNaN(v)?d:v;
+const av = a => a.length?a.reduce((s,v)=>s+v,0)/a.length:0;
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const fmt = v => Math.abs(v)>=100||Number.isInteger(v)?String(Math.round(v)):v.toFixed(1).replace(/\.0$/,'');
+const ln = s => String(s||'').split('/');
+
+const D={
+  ver:4,fb:'',bd:'single',ba:'',bb:'',ca:'#39ff14',cb:'#ff2bd6',
+  fx:{tn:'',ta:'',tc:'',tf:'',o1n:'',o1a:'',o1c:'',o1f:'',o2n:'',o2a:'',o2c:'',o2f:'',nr:'r'},
+  xp:{pos:'MID',avg:'',apps:'',last:'',form:'',f1:'',v1:'',f2:'',v2:'',ch:'100',prior:'',wf:''},
+  type:'scatter',xl:'Minutes per Key Pass or Interception',yl:'Minutes per Goal Involvement',
+  xmin:null,xmax:null,ymin:null,ymax:null,xrev:true,yrev:true,
+  title:'Gameweek 12 Midfielders Analysis',leg:'Next 2 Fixtures/Difficulty Rating',
+  q0:'HIGHER CEILING / LOWER FLOOR',q1:'HIGHER CEILING / HIGHER FLOOR',q2:'LOWER CEILING / LOWER FLOOR',q3:'LOWER CEILING / HIGHER FLOOR',
+  bl:'',bv:'x',bs:'desc',
+  pal:PAL,
+  metrics:[1,2,3,4,5].map(()=>({n:'',m:null})),
+  players:[
+    {n:'Cozier-Durberry',x:33,y:52,c1:'#39ff14',c2:'#39ff14',two:false,pos:'MID',v:[80,70,60,50,90],k:'#39ff14',id:'p0'},
+    {n:'Russel',x:25,y:74,c1:'#39ff14',c2:'#ffe600',two:true,pos:'MID',v:[70,80,50,60,85],k:'#00f0ff',id:'p1'},
+    {n:'Azaz',x:40,y:100,c1:'#ffe600',c2:'#ffe600',two:false,pos:'MID',v:[60,65,70,75,80],k:'#ff007f',id:'p2'},
+    {n:'Moylan',x:45,y:110,c1:'#ffe600',c2:'#ff5500',two:true,pos:'MID',v:[50,60,80,70,75],k:'#ffe600',id:'p3'},
+    {n:'Kanté',x:55,y:122,c1:'#39ff14',c2:'#39ff14',two:false,pos:'MID',v:[90,50,60,70,60],k:'#bf00ff',id:'p4'}
+  ]
+};
+let S=JSON.parse(JSON.stringify(D));
+POP={axis:['Minutes per Key Pass or Interception  (Lower = Higher Floor \u2192)','Minutes per Goal Involvement  (Lower = Higher Ceiling \u2191)','Clean Sheets  (More = Better Defensively \u2192)','2+ Goals  (More = Better Attacking \u2191)','Clean Sheets','Saves','xG per 90','xG Conceded per 90','Goals per 90','Goals Conceded per 90','Shots per 90','Shots on Target per 90','Big Chances Created per 90','Key Passes per 90','Points per Game'],
+quad:['HIGHER CEILING/LOWER FLOOR','HIGHER CEILING/HIGHER FLOOR','LOWER CEILING/LOWER FLOOR','LOWER CEILING/HIGHER FLOOR','BETTER ATTACKING/WORSE DEFENSIVELY','BETTER ATTACKING/BETTER DEFENSIVELY','WORSE ATTACKING/WORSE DEFENSIVELY','WORSE ATTACKING/BETTER DEFENSIVELY'],
+title:['Gameweek 12 Midfielders Analysis','Gameweek 12 Teams Analysis'],leg:['Next 2 Fixtures/Difficulty Rating'],
+stat:['xG/90','xGC/90','xG difference/90','Goals/90','Goals conceded/90','Shots/90','Shots on target/90','Shots conceded/90','Big chances created/90','Big chances conceded/90','Possession %','Pass accuracy %','Key passes/90','Crosses/90','Touches in box/90','Corners/90','Tackles/90','Interceptions/90','Clearances/90','Aerial duels won %','PPDA (pressing)','Clean sheet %','Points per game','Goals','Assists','Key Passes','Shots','Shots on Target','Tackles','Interceptions','Clearances','Saves','Clean Sheets','Minutes','Pace','Passing','Dribbling','Creativity','Attack','Defence','Aerial']};
+
+try{const j=localStorage.getItem('fsm1');if(j){const o=JSON.parse(j);if(!o.ver){o.xmin=o.xmax=o.ymin=o.ymax=null}
+if((o.ver||0)<4){if(Array.isArray(o.metrics)&&o.metrics.map(m=>m&&m.n).join('|')=='Attack|Creativity|Defence|Passing|Pace|Aerial'){o.metrics=[1,2,3,4,5].map(()=>({n:'',m:null}));(o.players||[]).forEach(p=>{if(p)p.v=[]})}o.ver=4}
+S=Object.assign(S,o)}}catch(e){}
+if(['scatter','bar','radar','fix','xpts'].indexOf(S.type)<0)S.type='scatter';S.fx=Object.assign({},D.fx,S.fx||{});S.xp=Object.assign({},D.xp,S.xp||{});
+
+const cv=$('cv'), c=cv.getContext('2d');
+const W=1200, H=1200, L=140, R=1060, T=140, B=1060, PW=W-L-R+140, PH=B-T;
+let LAST=null;
+const F='-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif';
+
+function tk(min,max){const r=max-min;if(r<=0)return[min];let sp=Math.pow(10,Math.floor(Math.log10(r)))/2;if(r/sp>7)sp*=2;let st=Math.ceil(min/sp)*sp,o=[];while(st<=max+1e-9){o.push(Math.abs(st)<1e-9?0:st);st+=sp}return o}
+const ft=(txt,x,y,mw,fs,w='')=>{c.font=w+fs+'px '+F;const lines=String(txt||'').split('/');if(lines.length<=1){c.fillText(txt,x,y);return}const lh=fs*1.2;let oy=y-(lines.length-1)*lh/2;lines.forEach(l=>{c.fillText(l,x,oy,mw);oy+=lh})}
+const lab=(t,x,y,a,b,sz=30)=>{c.font='bold '+sz+'px '+F;c.textAlign=a;c.textBaseline=b;const m=c.measureText(t).width,pad=10;c.fillStyle='rgba(11,14,20,0.85)';c.fillRect(x+(a=='right'?-m-pad*2:a=='center'?-m/2-pad:0),y-sz/2-8,m+pad*2,sz+12);c.fillStyle='#fff';c.fillText(t,x,y)}
+
+function bfr(it,vs){c.font='bold 28px '+F;
+const LB=Math.min(340,Math.max(150,Math.max(...it.map(p=>c.measureText(String(nz(p.n,''))).width))+50)),RB=R-110,
+mn=Math.min(0,...vs),mxv=Math.max(0,...vs),span=(mxv-mn)||1;let lo=nz(S.bmin,mn<0?mn-.2*span:mn),hi=nz(S.bmax,mxv+.2*span);if(hi<=lo)hi=lo+1;
+const bx=v=>Math.min(RB,Math.max(LB,LB+(v-lo)/(hi-lo)*(RB-LB)));X0=LB;
+c.fillStyle='#12161e';c.fillRect(LB,T,R-LB,PH);c.strokeStyle='#1e2532';c.lineWidth=1.5;c.fillStyle='#e8ecf2';c.font='26px '+F;c.textAlign='center';c.textBaseline='top';
+tk(lo,hi).forEach(v=>{const p=bx(v);c.beginPath();c.moveTo(p,T);c.lineTo(p,B);c.stroke();c.fillText(fmt(v),p,B+10)});
+c.strokeStyle='#3a4251';c.lineWidth=2;c.strokeRect(LB,T,R-LB,PH);return{LB,bx,z:bx(0)}}
+
+function dBar(){
+if(S.bd=='double')return dBar2();
+const k=S.bv=='x'?'x':'y',it=S.players.filter(p=>p[k]!=null);X0=L;
+if(S.bs=='desc')it.sort((a,b)=>b[k]-a[k]);else if(S.bs=='asc')it.sort((a,b)=>a[k]-b[k]);
+if(!it.length){c.fillStyle='#12161e';c.fillRect(L,T,PW,PH);note('Enter a value for at least one player');return}
+const{LB,bx,z}=bfr(it,it.map(p=>+p[k])),rh=Math.min(96,PH/it.length),y0=T+(PH-rh*it.length)/2,bh=rh*.52;
+it.forEach((p,i)=>{const cy=y0+rh*(i+.5),v=+p[k],xe=bx(v);c.globalAlpha=spA(p);
+c.save();c.shadowColor=p.k;c.shadowBlur=26;c.fillStyle=p.k;c.fillRect(Math.min(z,xe),cy-bh/2,Math.abs(xe-z),bh);c.restore();
+if(v>=0)lab(fmt(v),xe+14,cy,'left','middle',28);else lab(fmt(v),xe-14,cy,'right','middle',28);
+c.fillStyle='#fff';c.textAlign='right';c.textBaseline='middle';ft(nz(p.n,''),LB-14,cy,LB-30,28,'bold ');c.globalAlpha=1});
+c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';ft(S.bl,(LB+R)/2,B+82,R-LB,30,'bold ')}
+
+function dBar2(){
+const it=S.players.filter(p=>p.x!=null||p.y!=null);X0=L;
+if(S.bs=='desc')it.sort((a,b)=>nz(b.x,-1e9)-nz(a.x,-1e9));else if(S.bs=='asc')it.sort((a,b)=>nz(a.x,1e9)-nz(b.x,1e9));
+if(!it.length){c.fillStyle='#12161e';c.fillRect(L,T,PW,PH);note('Enter values for at least one player');return}
+const vs=[];it.forEach(p=>{if(p.x!=null)vs.push(+p.x);if(p.y!=null)vs.push(+p.y)});
+const{LB,bx,z}=bfr(it,vs),rh=Math.min(120,PH/it.length),y0=T+(PH-rh*it.length)/2,bh=Math.min(rh*.3,36);
+it.forEach((p,i)=>{const cy=y0+rh*(i+.5);c.globalAlpha=spA(p);
+[[p.x,S.ca,-bh],[p.y,S.cb,0]].forEach(q=>{if(q[0]==null)return;const v=+q[0],xe=bx(v),y=cy+q[2];
+c.save();c.shadowColor=q[1];c.shadowBlur=22;c.fillStyle=q[1];c.fillRect(Math.min(z,xe),y,Math.abs(xe-z),bh);c.restore();
+if(v>=0)lab(fmt(v),xe+12,y+bh/2,'left','middle',22);else lab(fmt(v),xe-12,y+bh/2,'right','middle',22)});
+c.fillStyle='#fff';c.textAlign='right';c.textBaseline='middle';ft(nz(p.n,''),LB-14,cy,LB-30,28,'bold ');c.globalAlpha=1});
+const a=String(S.ba||'').trim()||'Bar 1',b=String(S.bb||'').trim()||'Bar 2';c.font='bold 24px '+F;
+const wa=c.measureText(a).width,wb=c.measureText(b).width;let kx=(W-(22+10+wa+44+22+10+wb))/2;const ky=B+132;
+[[a,S.ca,wa],[b,S.cb,wb]].forEach(q=>{c.save();c.shadowColor=q[1];c.shadowBlur=12;c.fillStyle=q[1];c.fillRect(kx,ky-11,22,22);c.restore();c.strokeStyle='#fff';c.lineWidth=2;c.strokeRect(kx,ky-11,22,22);c.fillStyle='#fff';c.textAlign='left';c.textBaseline='middle';c.font='bold 24px '+F;c.fillText(q[0],kx+32,ky);kx+=22+10+q[2]+44});
+c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';ft(S.bl,(LB+R)/2,B+82,R-LB,30,'bold ')}
+
+function dRadar(){
+const ps=S.players.filter(p=>p.v.some(v=>v!=null));
+const M=S.metrics;
+if(!ps.length||!M.length){c.fillStyle='#12161e';c.fillRect(L,T,PW,PH);note('Add metrics and player values');return}
+const mv=radMax(ps),cx=W/2,cy=T+PH/2,rr=Math.min(PW,PH)/2-130,N=M.length;
+for(let g=5;g>=1;g--){const r=rr*g/5;c.strokeStyle='#1e2532';c.lineWidth=g==5?2:1;c.beginPath();for(let i=0;i<N;i++){const th=i*2*Math.PI/N-Math.PI/2,x=cx+r*Math.cos(th),y=cy+r*Math.sin(th);if(i)c.lineTo(x,y);else c.moveTo(x,y)}c.closePath();c.stroke();c.fillStyle='#8b94a5';c.font='20px '+F;c.textAlign='center';c.fillText(g*20+'%',cx+15,cy-r)}
+M.forEach((m,i)=>{const th=i*2*Math.PI/N-Math.PI/2,co=Math.cos(th),si=Math.sin(th);c.strokeStyle='#1e2532';c.lineWidth=1;c.beginPath();c.moveTo(cx,cy);c.lineTo(cx+rr*co,cy+rr*si);c.stroke();let a='center';if(Math.abs(co)>0.3)a=co>0?'left':'right';let b='middle';if(Math.abs(si)>0.3)b=si>0?'top':'bottom';if(String(nz(m.n,'')).trim())lab(String(m.n).trim(),cx+(rr+18)*co,cy+(rr+18)*si,a,b,26)});
+ps.forEach(p=>{const q=M.map((m,j)=>{const v=+p.v[j];return isNaN(v)?0:Math.min(1,v/mv[j])});
+c.save();c.globalAlpha=spA(p);c.beginPath();q.forEach((z,j)=>{const th=j*2*Math.PI/N-Math.PI/2,x=cx+rr*z*Math.cos(th),y=cy+rr*z*Math.sin(th);if(j)c.lineTo(x,y);else c.moveTo(x,y)});c.closePath();
+c.fillStyle=p.k+'33';c.fill();c.strokeStyle=p.k;c.lineWidth=4;c.stroke();c.restore()});
+const lx=(W-(ps.length*160))/2;ps.forEach((p,i)=>{c.globalAlpha=spA(p);c.fillStyle=p.k;c.fillRect(lx+i*160,B+70,24,24);c.fillStyle='#fff';c.textAlign='left';c.textBaseline='middle';c.font='bold 24px '+F;c.fillText(nz(p.n,'Player'),lx+i*160+34,B+82);c.globalAlpha=1})
+}
+function note(t){c.fillStyle='#8b94a5';c.font='32px '+F;c.textAlign='center';c.textBaseline='middle';c.fillText(t,W/2,T+PH/2)}
+
+function dScatter(){
+const ps=S.players.filter(p=>p.x!=null&&p.y!=null);
+c.fillStyle='#12161e';c.fillRect(L,T,PW,PH);
+if(!ps.length){note('Enter X and Y for at least one player');return}
+let xmin=nz(S.xmin,Math.min(...ps.map(p=>p.x))),xmax=nz(S.xmax,Math.max(...ps.map(p=>p.x)));
+let ymin=nz(S.ymin,Math.min(...ps.map(p=>p.y))),ymax=nz(S.ymax,Math.max(...ps.map(p=>p.y)));
+if(xmin==xmax){xmin-=1;xmax+=1} if(ymin==ymax){ymin-=1;ymax+=1}
+const xpd=(xmax-xmin)*0.1, ypd=(ymax-ymin)*0.1;
+xmin-=xpd; xmax+=xpd; ymin-=ypd; ymax+=ypd;
+const mx=v=>L+(S.xrev?(xmax-v)/(xmax-xmin):(v-xmin)/(xmax-xmin))*PW;
+const my=v=>T+(S.yrev?(v-ymin)/(ymax-ymin):(ymax-v)/(ymax-ymin))*PH;
+const px=mx(av(ps.map(p=>p.x))), py=my(av(ps.map(p=>p.y)));
+LAST={mx,my,px,py,xmin,xmax,ymin,ymax};
+
+c.strokeStyle='#1e2532';c.lineWidth=1.5;c.fillStyle='#8b94a5';c.font='24px '+F;c.textAlign='center';c.textBaseline='top';
+tk(xmin,xmax).forEach(v=>{const x=mx(v);c.beginPath();c.moveTo(x,T);c.lineTo(x,B);c.stroke();c.fillText(fmt(v),x,B+12)});
+c.textAlign='right';c.textBaseline='middle';
+tk(ymin,ymax).forEach(v=>{const y=my(v);c.beginPath();c.moveTo(L,y);c.lineTo(R,y);c.stroke();c.fillText(fmt(v),L-12,y)});
+c.strokeStyle='#3a4251';c.lineWidth=2;c.strokeRect(L,T,PW,PH);
+
+c.strokeStyle='rgba(255,255,255,0.25)';c.lineWidth=2;c.setLineDash([8,8]);
+c.beginPath();c.moveTo(px,T);c.lineTo(px,B);c.moveTo(L,py);c.lineTo(R,py);c.stroke();c.setLineDash([]);
+
+const q=[[L+20,T+20,'left','top',S.q0],[R-20,T+20,'right','top',S.q1],[L+20,B-40,'left','bottom',S.q2],[R-20,B-40,'right','bottom',S.q3]];
+c.font='bold 20px '+F;q.forEach(z=>{if(z[4]){c.fillStyle='rgba(255,255,255,0.4)';c.textAlign=z[2];c.textBaseline=z[3];ft(z[4],z[1]==L+20?z[1]:z[1]-20,z[3]=='top'?z[1]-20+20:z[1]-20-20,PW/2-40,20,'bold ')}});
+
+const SPS=S.spots&&S.spots.length?S.spots:null,hot=p=>SPS&&SPS.indexOf(p.id)>=0,al=p=>SPS&&!hot(p)?0.22:1;
+ps.forEach(p=>{const x=mx(p.x),y=my(p.y),bm=hot(p)?18:0,r=28+bm;c.globalAlpha=al(p);
+if(p.two){const c1=p.c1||S.pal[0].c,c2=p.c2||S.pal[1].c;
+c.save();c.shadowColor=c1;c.shadowBlur=20;c.beginPath();c.arc(x,y,r,Math.PI/2,Math.PI*3/2);c.fillStyle=c1;c.fill();c.restore();
+c.save();c.shadowColor=c2;c.shadowBlur=20;c.beginPath();c.arc(x,y,r,Math.PI*3/2,Math.PI/2);c.fillStyle=c2;c.fill();c.restore();
+c.strokeStyle='#fff';c.lineWidth=3;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.stroke();
+c.strokeStyle='rgba(0,0,0,0.3)';c.lineWidth=2;c.beginPath();c.moveTo(x,-r+y);c.lineTo(x,r+y);c.stroke();
+}else{const cl=p.k||S.pal[0].c;c.save();c.shadowColor=cl;c.shadowBlur=22;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fillStyle=cl;c.fill();c.restore();c.strokeStyle='#fff';c.lineWidth=3;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.stroke()}
+lab(p.n,x,y,x<W/2?'left':'right',y<H/2?'bottom':'top',hot(p)?38:30)});c.globalAlpha=1;ps.filter(hot).forEach(q=>{c.save();c.shadowColor='#fff';c.shadowBlur=24;c.strokeStyle='#fff';c.lineWidth=4;c.setLineDash([10,8]);c.beginPath();c.arc(mx(q.x),my(q.y),r+hw(q)+18,0,7);c.stroke();c.restore()});
+
+c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';
+ft(S.xl,W/2,B+80,PW,30,'bold ');
+c.save();c.translate(L-80,T+PH/2);c.rotate(-Math.PI/2);ft(S.yl,0,0,PH,30,'bold ');c.restore();
+}
+
+function draw(){
+if(CALC())return;
+c.setTransform(2,0,0,2,0,0);
+c.fillStyle='#12161e';c.fillRect(0,0,W,H);
+if(S.type=='scatter')dScatter();
+else if(S.type=='bar')dBar();
+else if(S.type=='radar')dRadar();
+if(S.title){c.fillStyle='#fff';c.textAlign='center';c.textBaseline='top';ft(S.title,W/2,34,PW,40,'bold ')}
+if(S.leg){c.fillStyle='#8b94a5';c.textAlign='center';c.textBaseline='top';ft(S.leg,W/2,84,PW,24)}
+}
+
+function num(i,p,f,l){return '<div style="flex:1"><input type="number" step="any" inputmode="decimal" data-i="'+i+'" data-f="'+f+'" value="'+esc(p[f])+(!isNaN(p[f])&&p[f]!==null?'':'')+'" placeholder="'+l+'"></div>'}
+const dr=(i,n,p)=>'<div class="dr" data-nk="c'+n+'" data-i="'+i+'"><span>Dot '+n+'</span>'+S.pal.map(k=>'<button class="sw" style="background:'+k.c+'" data-sw="'+k.c+'" data-n="'+n+'"></button>').join('')+'<input type="color" data-i="'+i+'" data-f="c'+n+'" value="'+esc(p['c'+n])+'" style="width:36px;height:36px;padding:0;border:0"></div>';
+const nr=(i,p)=>'<div class="dr" data-nk="k" data-i="'+i+'"><span>Colour</span>'+NEON.map(k=>'<button class="sw" style="background:'+k+'" data-sw="'+k+'"></button>').join('')+'<input type="color" data-i="'+i+'" data-f="k" value="'+esc(p.k)+'" style="width:36px;height:36px;padding:0;border:0"></div>';
+
+function cards(){
+  const ok=p=>S.type=='radar'?p.v.some(v=>v!=null):S.type=='bar'?(S.bd=='double'?p.x!=null||p.y!=null:p[S.bv]!=null):p.x!=null&&p.y!=null;
+  $('rm').innerHTML=S.players.map((p,i)=>'<details'+(ok(p)?'':' open')+'><summary style="display:flex;justify-content:space-between;align-items:center"><span>'+esc(p.n||'Player '+(i+1))+'</span><button data-rm="'+i+'" style="padding:4px 8px;font-size:12px">&#10005;</button></summary><div class="in">'
+  +'<label>Name</label><input data-i="'+i+'" data-f="n" value="'+esc(p.n)+'">'
+  +(S.type=='scatter'?'<div class="r">'+num(i,p,'x','X value')+num(i,p,'y','Y value')+'</div>':S.type=='bar'?S.bd=='double'?'':'<div class="r">'+num(i,p,S.bv,'Value ('+S.bv.toUpperCase()+')')+'</div>':'')
+  +(S.type=='scatter'?dr(i,1,p)+dr(i,2,p):S.type=='bar'&&S.bd=='double'?'':nr(i,p))
+  +(S.type=='radar'?S.metrics.map((m,j)=>'<div class="r"><label class="dl">'+esc(m.n||'M'+(j+1))+'</label><input type="number" step="any" inputmode="decimal" data-i="'+i+'" data-m="'+j+'" value="'+esc(p.v[j])+'"></div>').join(''):'')
+  +'</div></details>').join('');
+}
+function rmr(){rm.innerHTML=S.metrics.map((m,j)=>'<div class="r" style="margin-top:10px;align-items:stretch"><div class="cb stk"><input data-m="'+j+'" data-f="n" value="'+esc(m.n)+'" placeholder="Point '+(j+1)+' name">'+popHTML('stat')+'</div><input type="number" step="any" inputmode="decimal" data-m="'+j+'" data-f="m" value="'+esc(m.m)+'" placeholder="max (auto)"><button data-md="'+j+'" style="flex:none">&#10005;</button></div>').join('')}
+
+function sync(){
+  document.querySelectorAll('[data-k]').forEach(e=>{
+    const k=e.dataset.k,v=S[k];
+    if(e.type=='checkbox')e.checked=!!v;else e.value=v!=null?v:'';
+  });
+  document.querySelectorAll('#tp button').forEach(b=>b.classList.toggle('on',b.dataset.t==S.type));
+}
+function ui(){const k=CALC();tp.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.t==S.type));
+document.querySelectorAll('details[data-t],div[data-t]').forEach(d=>{d.hidden=d.dataset.t.split(' ').indexOf(S.type)<0});
+$('cw').hidden=k;$('mn').classList.toggle('calc',k);sync();syncCalc()}
+
+const CALC=()=>S.type=='fix'||S.type=='xpts',
+save=()=>{try{localStorage.setItem('fsm1',JSON.stringify(S,(k,v)=>k=='spots'?undefined:v))}catch(e){}},
+spA=p=>S.spots&&S.spots.length&&S.spots.indexOf(p.id)<0?0.22:1,
+radMax=ps=>S.metrics.map((m,j)=>{const v=Math.max(0,...ps.map(p=>+p.v[j]||0)),q=nz(m.m,v);return q>0?q:1}),
+popHTML=k=>'<select class="pop" title="Popular"><option value="" hidden>\u25be</option><option disabled>Popular: tap one to use it</option>'+POP[k].map(v=>'<option value="'+esc(v)+'">'+esc(v.replace(/\//g,' / '))+'</option>').join('')+'</select>';
+
+function initPop(){document.querySelectorAll('[data-pop]').forEach(i=>{const w=document.createElement('div');w.className='cb';i.parentNode.insertBefore(w,i);w.appendChild(i);w.insertAdjacentHTML('beforeend',popHTML(i.dataset.pop)+(i.hasAttribute('data-x')?'<button class="xb" title="Remove this label">&#10005;</button>':''))});
+document.querySelectorAll('[data-nk]').forEach(d=>d.insertAdjacentHTML('afterbegin',NEON.map(k=>'<button class="sw" style="background:'+k+'" data-nkv="'+k+'" data-key="'+d.dataset.nk+'"></button>').join('')))}
+
+document.addEventListener('change',e=>{const s=e.target;if(s.className!='pop')return;const i=s.previousElementSibling;if(i&&s.value){i.value=s.value;i.dispatchEvent(new Event('input',{bubbles:true}))}s.selectedIndex=0});
+document.addEventListener('click',e=>{const t=e.target;if(!t.closest)return;const x=t.closest('.xb');if(x){const i=x.parentNode.querySelector('input');i.value='';i.dispatchEvent(new Event('input',{bubbles:true}));return}
+const n=t.closest('[data-nkv]');if(n){S[n.dataset.key]=n.dataset.nkv;sync();go()}});
+
+function ins(){
+if(CALC())return null;
+const t=String(nz(S.title,'')).trim(),nm=p=>String(p.n||'Player'),names=a=>a.map(nm).join(', '),named=p=>String(p.n||'').trim();
+if(S.type=='scatter'){
+const ps=S.players.filter(p=>p.x!=null&&p.y!=null&&named(p));if(ps.length<2||!LAST)return null;
+const zf=f=>{const a=ps.map(p=>+p[f]),m=av(a),s=Math.sqrt(av(a.map(v=>(v-m)*(v-m))))||1;return v=>(v-m)/s},zx=zf('x'),zy=zf('y'),
+rate=k=>{const j=S.pal.findIndex(q=>q.c==k);return j<0?3:j+1},
+rk=ps.map(p=>{const f=p.two?(rate(p.c1)+rate(p.c2))/2:rate(p.c1);return{p,f,s:((S.xrev?-1:1)*zx(p.x)+(S.yrev?-1:1)*zy(p.y))/2+(3-f)*.25}}).sort((a,b)=>b.s-a.s),
+q=[[],[],[],[]];ps.forEach(p=>{q[(LAST.my(p.y)>LAST.py?2:0)+(LAST.mx(p.x)>LAST.px?1:0)].push(p)});
+let cap=t+'\n\nTop picks: '+names(rk.slice(0,3).map(o=>o.p));
+if(S.quad)q.forEach((a,i)=>{if(a.length)cap+='\n'+ln(S['q'+i]).join(' / ')+': '+names(a)});
+const ez=rk.filter(o=>o.f<=2).map(o=>o.p);if(ez.length)cap+='\nEasy next 2: '+names(ez);
+return{list:rk.map(o=>({id:o.p.id,t:nm(o.p)+' ('+(o.s>=0?'+':'')+o.s.toFixed(2)+')'})),cap,sc:1}}
+if(S.type=='bar'){const dbl=S.bd=='double',k=dbl||S.bv=='x'?'x':'y',a=S.players.filter(p=>p[k]!=null&&named(p)).sort((u,v)=>v[k]-u[k]);if(a.length<2)return null;
+const val=p=>dbl?fmt(p.x)+' / '+(p.y==null?'-':fmt(p.y)):fmt(p[k]),lw=a[a.length-1];
+return{list:a.map(p=>({id:p.id,t:nm(p)+' ('+val(p)+')'})),cap:t+'\n\nHighest: '+a.slice(0,3).map(p=>nm(p)+' '+val(p)).join(', ')+'\nLowest: '+nm(lw)+' '+val(lw)}}
+const M=S.metrics,ps=S.players.filter(p=>named(p)&&p.v.some(v=>v!=null));if(ps.length<2||M.length<3)return null;
+const mv=radMax(ps),rk=ps.map(p=>{const q=M.map((m,j)=>Math.min(1,(+p.v[j]||0)/mv[j]));return{p,q,s:av(q)}}).sort((a,b)=>b.s-a.s),
+lb=j=>String(M[j].n||'').trim()||'point '+(j+1),
+best=o=>{let hi=0,lo=0;o.q.forEach((v,j)=>{if(v>o.q[hi])hi=j;if(v<o.q[lo])lo=j});return nm(o.p)+': strongest '+lb(hi)+', weakest '+lb(lo)};
+return{list:rk.map(o=>({id:o.p.id,t:nm(o.p)+' ('+Math.round(o.s*100)+'%)'})),cap:t+'\n\nBest all-round: '+names(rk.slice(0,3).map(o.p))+'\n'+rk.slice(0,3).map(best).join('\n')}}
+
+function renderIns(){const d=$('dIn');if(!d||!d.open||CALC())return;const o=ins();
+if(!o){$('ins').innerHTML='<label>Add at least two named players with numbers to see insights.</label>';$('cap').value='';return}
+const sp=S.spots||[],on=id=>sp.indexOf(id)>=0,top=o.list.slice(0,5),rest=o.list.slice(5),
+btn=r=>'<button data-sp="'+esc(r.id)+'" style="flex:none'+(on(r.id)?';background:var(--a);color:#04140c':'')+'">'+(on(r.id)?'Spotlit':'Spotlight')+'</button>';
+$('ins').innerHTML='<label>Best picks, top 5'+(o.sc?' (score: above average on both axes, flipped axes count as lower is better, plus a small bonus for easy fixtures)':'')+'</label>'
++top.map((r,i)=>'<div class="r" style="margin-top:6px;align-items:center"><span style="flex:3">'+(i+1)+'. '+esc(r.t)+'</span>'+btn(r)+'</div>').join('')
++(rest.length?'<label>Everyone else: pick any player to spotlight or un-spotlight</label><select id="spx"><option value="">Choose a player...</option>'+rest.map(r=>'<option value="'+esc(r.id)+'">'+(on(r.id)?'\u2713 ':'')+esc(r.t)+'</option>').join('')+'</select>':'')
++'<div class="r" style="margin-top:10px"><button data-all="1">Spotlight all</button><button data-none="1">Clear spotlight</button></div>'
++(sp.length?'<div>'+sp.map(id=>{const r=o.list.find(z=>z.id==id);return r?'<button class="chip" data-sp="'+esc(id)+'">'+esc(r.t.replace(/ \(.*$/,''))+' &#10005;</button>':''}).join('')+'</div>':'');
+$('cap').value=o.cap}
+const tog=id=>{S.spots=S.spots||[];const i=S.spots.indexOf(id);if(i>=0)S.spots.splice(i,1);else S.spots.push(id);go()};
+function insBind(){$('dIn').addEventListener('toggle',renderIns);
+$('ins').onclick=e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;if(d.sp!=null)tog(d.sp);else if(d.all!=null){const o=ins();S.spots=o?o.list.map(r=>r.id):[];go()}else if(d.none!=null){S.spots=[];go()}};
+$('ins').onchange=e=>{if(e.target.id=='spx'&&e.target.value)tog(e.target.value)};
+$('cp').onclick=()=>{const a=$('cap');a.select();if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(a.value).catch(function(){});try{document.execCommand('copy')}catch(e){}$('cp').textContent='Copied (or long-press the text to copy)';setTimeout(()=>{$('cp').textContent='Copy caption'},2000)}}
+
+const row=(l,h,i)=>'<div class="cr"><span>'+l+(h?'<small>'+h+'</small>':'')+'</span>'+i+'</div>',
+inp=(c,k,ph,x)=>'<input data-c="'+c+'" data-f="'+k+'" placeholder="'+ph+'" '+(x||'')+'>',
+sel=(c,k,o)=>'<select data-c="'+c+'" data-f="'+k+'">'+o.map(q=>'<option value="'+q[0]+'">'+q[1]+'</option>').join('')+'</select>',
+pf=v=>{const s=String(nz(v,'')).trim().replace(',','.');if(s==='')return null;const n=+s;return isFinite(n)?n:NaN},
+f1d=v=>(Math.round(v*10)/10).toFixed(1),
+LBL=['','Extremely good','Good','Average','Tough','Very tough'],
+rk24=r=>(24-r)/23,
+fVal=(raw,nr)=>{let a=raw.split('');a=nr=='l'?a.slice(0,5).reverse():a.slice(-5);if(!a.length)return 0;const P={W:1,D:1/3,L:0};let w=0,t=0;a.forEach((ch,i)=>{w+=i+1;t+=(i+1)*P[ch]});return Math.max(-1,Math.min(1,(t/w-.48)/.52))},
+toR=q=>q>=.76?1:q>=.61?2:q>=.39?3:q>=.23?4:5,
+ovr=r=>{const a=[r.atk.r,r.mid.r,r.def.r],cn={};a.forEach(v=>{cn[v]=(cn[v]||0)+1});const m=Object.keys(cn).filter(k=>cn[k]>=2);return m.length?+m[0]:Math.round(av(a))},
+tile=(t,o)=>'<div class="tile"><b style="background:'+S.pal[o.r-1].c+'">'+o.r+'</b><span>'+t+'</span><i>'+LBL[o.r]+'</i><i>score '+Math.round(o.q*100)+'/100</i></div>';
+let FXR=null;
+function fxForm(){const blk=(t,p)=>'<h3>'+t+'</h3>'+row('Name','optional',inp('fx',p+'n','e.g. Leeds'))+row('xG table position','1 to 24 (1 = most xG)',inp('fx',p+'a','1-24','inputmode="numeric"'))+row('xG conceded position','1 to 24 (1 = fewest conceded)',inp('fx',p+'c','1-24','inputmode="numeric"'))+row('Last 5 results','W, D or L, e.g. WDLWD',inp('fx',p+'f','WDLWD','maxlength="12" autocapitalize="characters"'));
+$('fx').innerHTML='<h2>Fixture difficulty</h2><p class="cn">Enter the three stats for the team you are assessing and for the opponent. For a double gameweek fill in Opponent 2 as well (leave it blank otherwise). You get a rating from 1 (extremely good fixture) to 5 (very tough) for defence, midfield and attack.</p><div class="box">'+blk('Team being assessed','t')+blk('Opponent 1','o1')+blk('Opponent 2 (double gameweek, optional)','o2')+'<h3>Options</h3>'+row('Newest result is on the','',sel('fx','nr',[['r','right (WDLWD = newest D)'],['l','left (WDLWD = newest W)']]))+'<div class="btns"><button class="go" id="fxgo">Calculate &#9654;</button><button class="gr" id="fxcl">Clear</button></div></div><div id="fxo"></div>'}
+function fxRun(){const f=S.fx,er=[],o=$('fxo'),pn=v=>{const t=String(nz(v,'')).trim();return/^\d+$/.test(t)?+t:NaN};
+const get=(p,lb,opt)=>{const blank=!String(f[p+'a']).trim()&&!String(f[p+'c']).trim()&&!String(f[p+'f']).trim();if(opt&&blank)return null;
+const a=pn(f[p+'a']),c=pn(f[p+'c']),raw=String(f[p+'f']).toUpperCase().replace(/\s/g,'');
+if(!(a>=1&&a<=24))er.push(lb+': xG table position must be a whole number from 1 to 24.');
+if(!(c>=1&&c<=24))er.push(lb+': xG conceded position must be a whole number from 1 to 24.');
+if(raw&&!/^[WDL]+$/.test(raw))er.push(lb+': last 5 results can only use W, D and L (for example WDLWD).');
+return{n:String(f[p+'n']||'').trim(),a,c,f:/^[WDL]*$/.test(raw)?fVal(raw,f.nr):0}};
+const T=get('t','Team',0),O=[get('o1','Opponent 1',0),get('o2','Opponent 2',1)].filter(Boolean);
+if(er.length){FXR=null;o.innerHTML=er.map(e=>'<div class="err">'+esc(e)+'</div>').join('');return}
+FXR=O.map((q,i)=>{const fm=(T.f-q.f)/2,fz=(fm+1)/2,atk=.55*(1-rk24(q.c))+.30*rk24(T.a)+.15*fz,def=.55*(1-rk24(q.a))+.30*rk24(T.c)+.15*fz,A={r:toR(atk),q:atk};
+return{t:T.n||'Team',o:q.n||'Opponent '+(i+1),atk:A,mid:A,def:{r:toR(def),q:def}}});
+o.innerHTML=FXR.map((r,i)=>'<div class="res"><h4>Fixture '+(i+1)+': '+esc(r.t)+' vs '+esc(r.o)+'</h4><div class="tiles">'+tile('Defence',r.def)+tile('Midfield',r.mid)+tile('Attack',r.atk)+'</div></div>').join('')
++'<div class="res"><h4>Use these ratings</h4><div class="cr"><span>Name for the chart</span><input id="fxnm" value="'+esc(T.n)+'" placeholder="Team or player"></div><div class="cr"><span>Dot colour from</span><select id="fxpk"><option value="o">Overall (most common of the three)</option><option value="a">Attack / midfield</option><option value="d">Defence</option></select></div><div class="btns"><button class="go" data-fa="1">Add to scatter chart</button><button class="gr" data-fb="1">Use in xPts</button></div><div id="fxm"></div>'
++'<details class="how"><summary>How the ratings are worked out</summary>Each table position becomes a strength from 1 (best) to 0 (24th). Attack score = 55% opponent weakness at the back (their xG conceded position) + 30% your own attack (xG position) + 15% form gap (last 5, newest results count more). Defence score is the same with the roles swapped (their xG position and your xG conceded position). Midfield uses the attack score. Scores of 76+ are a 1, 61+ a 2, 39+ a 3, 23+ a 4, below that a 5, so 1s and 5s stay rare (about 8% each). Because the opponent counts for most, a bottom-table side gives out 1s far more easily than a top side does when it meets a mid-table team.</details></div>'}
+function fxAct(e){const b=e.target.closest('button');if(!b||!FXR)return;const m=$('fxm');
+if(b.dataset.fa){const pk=$('fxpk').value,col=r=>S.pal[(pk=='a'?r.atk.r:pk=='d'?r.def.r:ovr(r))-1].c;
+S.players.unshift({n:$('fxnm').value.trim()||FXR[0].t,x:null,y:null,c1:col(FXR[0]),c2:col(FXR[1]||FXR[0]),two:FXR.length>1,pos:'t',v:[],k:NEON[S.players.length%8],id:'p'+Math.random().toString(36).slice(2,8)});save();cards();m.innerHTML='<div class="okm">Added to your player list with the dot colours set. Open Scatter and fill in X and Y to plot it.</div>'}
+else if(b.dataset.fb){xpFill();m.innerHTML='<div class="okm">Ratings copied into the xPts tab for the position chosen there.</div>'}}
+
+const XP={GK:{p:4.3,s:.18,k:'def'},DEF:{p:4.0,s:.16,k:'def'},MID:{p:3.8,s:.12,k:'atk'},FWD:{p:3.6,s:.14,k:'atk'}};
+function xpFill(){if(!FXR)return false;const k=(XP[S.xp.pos]||XP.MID).k;S.xp.f1=String(FXR[0][k].r);S.xp.f2=FXR[1]?String(FXR[1][k].r):'';syncCalc();save();return true}
+function xpForm(){$('xp').innerHTML='<h2>Expected points (Fantasy EFL)</h2><p class="cn">Estimates a player\'s points for the next fixture, or both fixtures in a double gameweek. It blends his season average with recent form, then adjusts for the fixture, home or away and his chance of playing.</p><div class="box"><h3>Player</h3>'
++row('Position','',sel('xp','pos',[['GK','Goalkeeper'],['DEF','Defender'],['MID','Midfielder'],['FWD','Forward']]))
++row('Average points per game','this season, e.g. 4.8',inp('xp','avg','4.8','inputmode="decimal"'))
++row('Appearances','optional, helps weigh the average',inp('xp','apps','10','inputmode="numeric"'))
++row('Last 5 scores','e.g. 6, 2, 9, 3, 5',inp('xp','last','6, 2, 9, 3, 5'))
++row('or form average','only if you do not have the 5 scores',inp('xp','form','5.2','inputmode="decimal"'))
++'<h3>Fixture 1</h3>'+row('Fixture rating','1 to 5 (use Defence for GK/DEF, Midfield or Attack for MID/FWD)',inp('xp','f1','1-5','inputmode="decimal"'))+row('Venue','',sel('xp','v1',[['','Not sure'],['h','Home'],['a','Away']]))
++'<h3>Fixture 2 (double gameweek, optional)</h3>'+row('Fixture rating','leave blank for a single game',inp('xp','f2','1-5','inputmode="decimal"'))+row('Venue','',sel('xp','v2',[['','Not sure'],['h','Home'],['a','Away']]))
++'<h3>Playing time</h3>'+row('Chance of playing','%, 100 if certain',inp('xp','ch','100','inputmode="decimal"'))
++'<details class="how"><summary>Advanced</summary>'+row('League average for position','points per game, blank = built in',inp('xp','prior','','inputmode="decimal"'))+row('Form weight','%, blank = automatic',inp('xp','wf','','inputmode="decimal"'))+'</details>'
++'<div class="btns"><button class="go" id="xpgo">Calculate &#9654;</button><button class="gr" id="xpcl">Clear</button><button id="xpfl">Fill ratings from Fixtures tab</button></div></div><div id="xpo"></div>'}
+function xpRun(){const x=S.xp,er=[],P=XP[x.pos]||XP.MID,o=$('xpo'),avg=pf(x.avg),apps=pf(x.apps),fo=pf(x.form),ch=pf(x.ch),pr=pf(x.prior),wf=pf(x.wf),f1=pf(x.f1),f2=pf(x.f2),
+lst=String(x.last).split(/[\s,;]+/).filter(Boolean).map(Number);
+if(avg===null||isNaN(avg)||avg<0)er.push('Enter his average points per game this season (0 or more).');
+if(apps!==null&&(isNaN(apps)||apps<0))er.push('Appearances must be a number, or leave it blank.');
+if(lst.some(v=>!isFinite(v)))er.push('Last 5 scores must be numbers separated by commas, for example 6, 2, 9, 3, 5.');
+if(fo!==null&&isNaN(fo))er.push('Form average must be a number, or leave it blank.');
+[[f1,'Fixture 1'],[f2,'Fixture 2']].forEach(q=>{if(q[0]!==null&&(isNaN(q[0])||q[0]<1||q[0]>5))er.push(q[1]+' rating must be between 1 and 5.')});
+if(ch!==null&&(isNaN(ch)||ch<0||ch>100))er.push('Chance of playing must be between 0 and 100.');
+if(pr!==null&&(isNaN(pr)||pr<0))er.push('League average must be a positive number, or leave it blank.');
+if(wf!==null&&(isNaN(wf)||wf<0||wf>60))er.push('Form weight must be between 0 and 60, or leave it blank.');
+if(er.length){o.innerHTML=er.map(e=>'<div class="err">'+esc(e)+'</div>').join('');return}
+const n=apps===null?10:apps,pri=pr===null?P.p:pr,base=(n*avg+4*pri)/(n+4),sc=lst.slice(-5).map(v=>Math.max(-3,Math.min(12,v)));
+let fm=null,w=0;
+if(sc.length){const s=[...sc].sort((a,b)=>a-b),med=s.length%2?s[(s.length-1)/2]:(s[s.length/2-1]+s[s.length/2])/2;fm=.5*av(sc)+.5*med;w=sc.length>=3?.25:.15}
+else if(fo!==null){fm=Math.max(-3,Math.min(12,fo));w=.2}
+if(wf!==null&&fm!==null)w=wf/100;
+const mu=fm===null?base:(1-w)*base+w*fm,chn=(ch===null?100:ch)/100,
+fx=[[f1,x.v1],[f2,x.v2]].filter((q,i)=>i==0||q[0]!==null).map(q=>{const d=q[0]===null?3:q[0],m=1+P.s*(3-d)/2,vv=q[1]=='h'?1.03:q[1]=='a'?.97:1;return{d,m,vv,pts:Math.max(0,Math.min(15,mu*m*vv))}}),
+tot=fx.reduce((s,q)=>s+q.pts,0)*chn,sd=Math.sqrt(fx.reduce((s,q)=>s+Math.pow(1.2+.4*q.pts,2),0)),
+tr=(a,b)=>'<tr><td>'+a+'</td><td>'+b+'</td></tr>',warn=[];
+if(avg>9)warn.push('An average above 9 is very rare in Fantasy EFL, so double check it.');
+if(f1===null)warn.push('No rating for fixture 1, so an average fixture (3) was used.');
+if(apps!==null&&apps<4)warn.push('Only a few appearances, so the average is leaning on the league average.');
+o.innerHTML='<div class="res"><h4>Expected points'+(fx.length>1?' (double gameweek)':'')+'</h4><div class="big">'+f1d(tot)+'</div><div class="cn">If captain (x2): <b>'+f1d(tot*2)+'</b></div>'
++warn.map(e=>'<div class="err">'+esc(e)+'</div>').join('')
++'<table class="bk">'+tr('Season average, adjusted for games played',f1d(base))
++(fm===null?'':tr('Recent form ('+(sc.length?'last '+sc.length+' scores':'average')+', '+Math.round(w*100)+'% weight)',f1d(fm)))
++tr('Blended points per game',f1d(mu))
++fx.map((q,i)=>tr('Fixture '+(i+1)+' (rating '+q.d+', x'+q.m.toFixed(2)+(q.vv!=1?', venue x'+q.vv.toFixed(2):'')+')',f1d(q.pts))).join('')
++tr('Chance of playing (x'+chn.toFixed(2)+')',f1d(tot))
++tr('Most likely range (about 2 in 3 outcomes)',f1d(Math.max(0,tot-sd))+' to '+f1d(tot+sd))+'</table>'
++'<details class="how"><summary>How this is worked out</summary>1) Season average is pulled slightly toward the league average for his position (as if he had 4 extra average games), so a small sample is not over-trusted. 2) Form (mean and median of his last 5 scores, each capped at 12 so one haul cannot distort it) takes about 25% of the weight. 3) The fixture rating changes the result by at most '+Math.round(P.s*100)+'% either way for a '+(x.pos=='GK'?'goalkeeper':x.pos=='DEF'?'defender':x.pos=='MID'?'midfielder':'forward')+' (rating 1 = +'+Math.round(P.s*100)+'%, 3 = no change, 5 = -'+Math.round(P.s*100)+'%). GK and DEF lean on clean sheets (+5), so they use the defence rating and swing a little more; MID and FWD use the midfield or attack rating. 4) Home x1.03, away x0.97. 5) Each game is capped at 15 and the total is scaled by his chance of playing. The range is a rough guide to how much a single game can vary.</details></div>'}
+
+function calcInit(){fxForm();xpForm();
+document.querySelectorAll('[data-c]').forEach(e=>{e.oninput=()=>{S[e.dataset.c][e.dataset.f]=e.value;save()}});
+$('fxgo').onclick=fxRun;$('fxcl').onclick=()=>{S.fx=Object.assign({},D.fx);FXR=null;$('fxo').innerHTML='';syncCalc();save()};
+$('fxo').onclick=fxAct;
+$('xpgo').onclick=xpRun;$('xpcl').onclick=()=>{S.xp=Object.assign({},D.xp);$('xpo').innerHTML='';syncCalc();save()};
+$('xpfl').onclick=()=>{$('xpo').innerHTML=xpFill()?'<div class="okm">Ratings filled in from the Fixtures tab for this position.</div>':'<div class="err">Calculate a fixture in the Fixtures tab first.</div>'};
+const ps=$('xp').querySelector('[data-f=pos]');ps.addEventListener('change',()=>{if(FXR)xpFill()})}
+function syncCalc(){document.querySelectorAll('[data-c]').forEach(e=>{e.value=nz(S[e.dataset.c][e.dataset.f],'')})}
+
+function go(){save();draw();renderIns()}
+
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.k!=null){S[t.dataset.k]=t.type=='checkbox'?t.checked:t.value;go()}
+  else if(t.dataset.i!=null){
+    const p=S.players[t.dataset.i],f=t.dataset.f,m=t.dataset.m;
+    if(m!=null)p.v[m]=t.value===''?'':+t.value;
+    else if(f!=null)p[f]=t.value;
+    go();
+  }
+  else if(t.dataset.m!=null){
+    const mm=S.metrics[t.dataset.m],f=t.dataset.f;
+    if(f=='n')mm.n=t.value;else if(f=='m')mm.m=t.value===''?'':+t.value;
+    go();
+  }
+});
+
+document.addEventListener('click',e=>{
+  const t=e.target;
+  if(t.dataset.sw!=null){
+    const dr=t.closest('.dr'),i=dr.dataset.i,n=t.dataset.n;
+    const p=S.players[i];
+    if(n){p['c'+n]=t.dataset.sw;dr.querySelector('input[type=color]').value=t.dataset.sw}
+    else{p.k=t.dataset.sw;dr.querySelector('input[type=color]').value=t.dataset.sw}
+    go();
+  }
+  else if(t.dataset.rm!=null){S.players.splice(t.dataset.rm,1);cards();go()}
+  else if(t.dataset.md!=null){S.metrics.splice(t.dataset.md,1);rmr();cards();go()}
+});
+
+$('tp').onclick=e=>{const b=e.target.closest('button');if(!b)return;S.type=b.dataset.t;ui();if(S.type=='radar')$('dRm').open=true;cards();go();window.scrollTo(0,0)};
+$('add').onclick=()=>{S.players.push({n:'New player',x:50,y:50,c1:'#39ff14',c2:'#00f0ff',two:false,pos:'MID',v:S.metrics.map(()=>50),k:NEON[S.players.length%8],id:'p'+Math.random().toString(36).slice(2,8)});cards();go()};
+$('addm').onclick=()=>{S.metrics.push({n:'',m:null});rmr();cards();go()};
+$('rst').onclick=()=>{if(confirm('Reset all data to defaults?')){localStorage.removeItem('fsm1');S=JSON.parse(JSON.stringify(D));ui();cards();rmr();calcInit();go()}};
+$('dl').onclick=()=>{const a=document.createElement('a');a.download='chart.png';a.href=cv.toDataURL('image/png');a.click()};
+
+document.querySelectorAll('.seg').forEach(g=>{
+  g.onclick=e=>{
+    const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.bv!=null){S.bv=b.dataset.bv;g.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x==b));go()}
+    else if(b.dataset.bs!=null){S.bs=b.dataset.bs;g.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x==b));go()}
+  }
+});
+
+initPop();calcInit();sync();ui();cards();rmr();draw();insBind();renderIns();
+</script>
+</body>
+</html>
