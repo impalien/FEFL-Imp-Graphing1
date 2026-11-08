@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Build data/efl_stats.json (Championship, League One, League Two) for the FEFL web app.
 
-Sources, all through soccerdata: FBref for players, results and fixtures; FotMob for team xG
-when FBref has none. FBref removed its Opta "advanced" columns (xG, xA, key passes, blocks,
+Sources: football-data.co.uk for results, form and fixtures (plain CSV, works on GitHub's servers);
+FotMob via soccerdata for team xG; FBref via soccerdata for players (often CAPTCHA-blocked on GitHub). FBref removed its Opta "advanced" columns (xG, xA, key passes, blocks,
 tackles, shots on target...) in Jan 2026, so those come back empty unless FBref restores them.
 Every metric that cannot be worked out is written as null, never a crash and never a fake 0.
 Env: EFL_SEASON (e.g. 2026-2027), EFL_OUT, EFL_NO_FOTMOB=1 to skip the slow FotMob step.
@@ -25,7 +25,7 @@ ALIAS = {"QPR": "Queens Park Rangers", "West Brom": "West Bromwich Albion", "Wol
          "MK Dons": "Milton Keynes Dons", "Sheffield Utd": "Sheffield United", "Sheffield Weds": "Sheffield Wednesday",
          "Sheffield Wed": "Sheffield Wednesday", "Preston": "Preston North End", "West Ham": "West Ham United",
          "Wycombe": "Wycombe Wanderers", "Stockport": "Stockport County", "Oxford Utd": "Oxford United",
-         "Cambridge Utd": "Cambridge United", "Newport": "Newport County", "Wimbledon": "AFC Wimbledon"}
+         "Cambridge Utd": "Cambridge United", "Newport": "Newport County", "Wimbledon": "AFC Wimbledon", "Peterboro": "Peterborough United", "Bristol Rvs": "Bristol Rovers"}
 KEYS = ["team", "player"]
 SPEC = {  # output column -> candidate FBref column names (first match wins = the season total)
     "standard": {"pos": ["Pos"], "mp": ["MP"], "min": ["Min"], "gls": ["Gls"], "ast": ["Ast"], "xag": ["xAG"]},
@@ -58,13 +58,14 @@ def tot(*v):
     return round(sum(v), 2) if v else None
 
 
-def app_name(raw):
+def app_name(raw, div=None):
     if raw is None or pd.isna(raw):
         return None
     s = ALIAS.get(str(raw).strip(), str(raw).strip())
-    if s in ALL_TEAMS:
+    pool = APP.get(div) or ALL_TEAMS
+    if s in pool:
         return s
-    m = difflib.get_close_matches(s, ALL_TEAMS, n=1, cutoff=0.6)
+    m = difflib.get_close_matches(s, pool, n=1, cutoff=0.6)
     return m[0] if m else s
 
 
@@ -194,6 +195,41 @@ def build_teams(div, matches):
     return list(T.values())
 
 
+FD = {"Championship": "E1", "League One": "E2", "League Two": "E3"}
+FD_BASE = os.environ.get("FD_BASE", "https://www.football-data.co.uk/")
+
+
+def fd_matches(div, season):
+    """Results plus upcoming fixtures from football-data.co.uk. Plain CSV files, so GitHub's servers get through."""
+    y = int(season[:4])
+    code = f"{y % 100:02d}{(y + 1) % 100:02d}"
+    res = pd.read_csv(f"{FD_BASE}mmz4281/{code}/{FD[div]}.csv", encoding="latin-1", on_bad_lines="skip")
+    out, seen = [], set()
+
+    def add(r, played):
+        h, a = app_name(r.get("HomeTeam"), div), app_name(r.get("AwayTeam"), div)
+        d = pd.to_datetime(r.get("Date"), dayfirst=True, errors="coerce")
+        hg, ag = (nn(r.get("FTHG")), nn(r.get("FTAG"))) if played else (None, None)
+        if not h or not a or (played and (hg is None or ag is None)):
+            return
+        ds = None if pd.isna(d) else d.strftime("%Y-%m-%d")
+        if (h, a, ds) in seen:
+            return
+        seen.add((h, a, ds))
+        out.append({"div": div, "h": h, "a": a, "hg": None if hg is None else int(hg),
+                    "ag": None if ag is None else int(ag), "hxg": None, "axg": None, "date": ds, "gw": None})
+
+    for _, r in res.iterrows():
+        add(r, True)
+    try:
+        fx = pd.read_csv(f"{FD_BASE}fixtures.csv", encoding="latin-1", on_bad_lines="skip")
+        for _, r in fx[fx["Div"] == FD[div]].iterrows():
+            add(r, False)
+    except Exception:
+        pass  # no upcoming-fixtures file right now: results still work
+    return out
+
+
 def fotmob_xg(key, season):
     import soccerdata as sd
     d = sd.FotMob(leagues=key, seasons=season).read_team_match_stats(
@@ -213,6 +249,9 @@ def finish_teams(rows):
     for t in rows:
         t["form"] = "".join(t.pop("res")[-5:])
         t["fixtures"] = t.pop("fx")[:8]
+        for i, f in enumerate(t["fixtures"]):
+            if f["gw"] is None:
+                f["gw"] = t["mp"] + 1 + i
         n = t["xg_games"]
         t["xg_pg"], t["xga_pg"] = sdiv(t["xg"], n, 2), sdiv(t["xga"], n, 2)
         t["xg"], t["xga"] = (round(t["xg"], 2), round(t["xga"], 2)) if n else (None, None)
@@ -240,41 +279,41 @@ def setup():
     (base / "config" / "league_dict.json").write_text(json.dumps(cfg))
 
 
+def fbref_players(sd, key, div, season, meta):
+    fb = sd.FBref(leagues=key, seasons=season)  # raises when FBref shows a CAPTCHA
+    frames = []
+    for stat, spec in SPEC.items():
+        err = None
+        for st in (("keepers", "keeper") if stat == "keepers" else (stat,)):
+            try:
+                frames.append(pull(fb.read_player_season_stats(stat_type=st), spec))
+                err = None
+                break
+            except Exception as e:
+                err = e
+        if err and stat == "standard":
+            raise err  # no basic table means blocked: stop wasting time
+        if err:
+            meta["warnings"].append(f"{div}: {stat} table failed: {str(err)[:150]}")
+    return build_players(div, frames)
+
+
 def main():
     setup()
     import soccerdata as sd  # imported after the league config exists
     season = get_season()
     meta = {"generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "season": season,
-            "sources": ["FBref via soccerdata"], "warnings": [], "unavailable_metrics": []}
+            "sources": [], "warnings": [], "unavailable_metrics": []}
     players = {"goalkeepers": [], "defenders": [], "midfielders": [], "attackers": []}
-    teams = []
+    teams, fb_ok = [], True
     for key, div in DIVS.items():
-        try:
-            fb = sd.FBref(leagues=key, seasons=season)
-        except Exception as e:
-            meta["warnings"].append(f"{div}: FBref setup failed: {e}")
-            continue
-        frames = []
-        for stat, spec in SPEC.items():
-            err = None
-            for st in (("keepers", "keeper") if stat == "keepers" else (stat,)):
-                try:
-                    frames.append(pull(fb.read_player_season_stats(stat_type=st), spec))
-                    err = None
-                    break
-                except Exception as e:
-                    err = e
-            if err:
-                meta["warnings"].append(f"{div}: {stat} table failed: {str(err)[:150]}")
-        for k, v in build_players(div, frames).items():
-            players[k] += v
         matches = []
         try:
-            matches = parse_matches(fb.read_schedule(), div)
+            matches = fd_matches(div, season)
         except Exception as e:
-            meta["warnings"].append(f"{div}: schedule failed: {str(e)[:150]}")
+            meta["warnings"].append(f"{div}: football-data.co.uk failed: {str(e)[:150]}")
         rows = build_teams(div, matches)
-        if not any(t["xg_games"] for t in rows) and not os.environ.get("EFL_NO_FOTMOB"):
+        if not os.environ.get("EFL_NO_FOTMOB"):
             try:
                 fm = fotmob_xg(key, season)
                 for t in rows:
@@ -284,6 +323,16 @@ def main():
             except Exception as e:
                 meta["warnings"].append(f"{div}: FotMob xG failed: {str(e)[:150]}")
         teams += finish_teams(rows)
+        if fb_ok:
+            try:
+                for k, v in fbref_players(sd, key, div, season, meta).items():
+                    players[k] += v
+                meta["sources"].append(f"FBref via soccerdata ({div} players)")
+            except Exception as e:
+                fb_ok = False
+                meta["warnings"].append(f"FBref unavailable from this server, player stats skipped: {str(e)[:150]}")
+    if any(t["mp"] for t in teams):
+        meta["sources"].insert(0, "football-data.co.uk (results, form, fixtures)")
     if not any(t["mp"] for t in teams) and not any(players.values()):
         sys.exit("No data came back from any source. Keeping the previous efl_stats.json untouched.")
     for k, rows in players.items():
