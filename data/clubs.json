@@ -1,0 +1,511 @@
+{
+ "updated": "2026-11-13T20:53:18+00:00",
+ "season": "2627",
+ "source": "football-data.co.uk",
+ "clubs": [
+  {
+   "club": "Birmingham",
+   "league": "Championship",
+   "p": 15,
+   "cs": 5,
+   "g2": 10
+  },
+  {
+   "club": "Blackburn",
+   "league": "Championship",
+   "p": 15,
+   "cs": 3,
+   "g2": 8
+  },
+  {
+   "club": "Bolton",
+   "league": "Championship",
+   "p": 15,
+   "cs": 4,
+   "g2": 6
+  },
+  {
+   "club": "Bristol City",
+   "league": "Championship",
+   "p": 15,
+   "cs": 2,
+   "g2": 5
+  },
+  {
+   "club": "Burnley",
+   "league": "Championship",
+   "p": 15,
+   "cs": 2,
+   "g2": 4
+  },
+  {
+   "club": "Cardiff",
+   "league": "Championship",
+   "p": 15,
+   "cs": 1,
+   "g2": 7
+  },
+  {
+   "club": "Charlton",
+   "league": "Championship",
+   "p": 15,
+   "cs": 3,
+   "g2": 4
+  },
+  {
+   "club": "Derby",
+   "league": "Championship",
+   "p": 15,
+   "cs": 1,
+   "g2": 3
+  },
+  {
+   "club": "Lincoln",
+   "league": "Championship",
+   "p": 15,
+   "cs": 4,
+   "g2": 2
+  },
+  {
+   "club": "Middlesbrough",
+   "league": "Championship",
+   "p": 15,
+   "cs": 4,
+   "g2": 9
+  },
+  {
+   "club": "Millwall",
+   "league": "Championship",
+   "p": 15,
+   "cs": 4,
+   "g2": 7
+  },
+  {
+   "club": "Norwich",
+   "league": "Championship",
+   "p": 15,
+   "cs": 2,
+   "g2": 9
+  },
+  {
+   "club": "Portsmouth",
+   "league": "Championship",
+   "p": 15,
+   "cs": 4,
+   "g2": 6
+  },
+  {
+   "club": "Preston",
+   "league": "Championship",
+   "p": 15,
+   "cs": 1,
+   "g2": 3
+  },
+  {
+   "club": "QPR",
+   "league": "Championship",
+   "p": 15,
+   "cs": 3,
+   "g2": 7
+  },
+  {
+   "club": "Sheffield United",
+   "league": "Championship",
+   "p": 15,
+   "cs": 5,
+   "g2": 6
+  },
+  {
+   "club": "Southampton",
+   "league": "Championship",
+   "p": 15,
+   "cs": 3,
+   "g2": 6
+  },
+  {
+   "club": "Stoke",
+   "league": "Championship",
+   "p": 15,
+   "cs": 5,
+   "g2": 8
+  },
+  {
+   "club": "Swansea",
+   "league": "Championship",
+   "p": 15,
+   "cs": 6,
+   "g2": 7
+  },
+  {
+   "club": "Watford",
+   "league": "Championship",
+   "p": 15,
+   "cs": 3,
+   "g2": 4
+  },
+  {
+   "club": "West Brom",
+   "league": "Championship",
+   "p": 15,
+   "cs": 3,
+   "g2": 6
+  },
+  {
+   "club": "West Ham",
+   "league": "Championship",
+   "p": 15,
+   "cs": 4,
+   "g2": 9
+  },
+  {
+   "club": "Wolves",
+   "league": "Championship",
+   "p": 15,
+   "cs": 4,
+   "g2": 8
+  },
+  {
+   "club": "Wrexham",
+   "league": "Championship",
+   "p": 15,
+   "cs": 3,
+   "g2": 4
+  },
+  {
+   "club": "AFC Wimbledon",
+   "league": "League One",
+   "p": 13,
+   "cs": 5,
+   "g2": 1
+  },
+  {
+   "club": "Barnsley",
+   "league": "League One",
+   "p": 12,
+   "cs": 1,
+   "g2": 2
+  },
+  {
+   "club": "Blackpool",
+   "league": "League One",
+   "p": 12,
+   "cs": 2,
+   "g2": 5
+  },
+  {
+   "club": "Bradford",
+   "league": "League One",
+   "p": 13,
+   "cs": 9,
+   "g2": 2
+  },
+  {
+   "club": "Bromley",
+   "league": "League One",
+   "p": 13,
+   "cs": 1,
+   "g2": 4
+  },
+  {
+   "club": "Burton",
+   "league": "League One",
+   "p": 14,
+   "cs": 2,
+   "g2": 6
+  },
+  {
+   "club": "Cambridge",
+   "league": "League One",
+   "p": 14,
+   "cs": 1,
+   "g2": 7
+  },
+  {
+   "club": "Doncaster",
+   "league": "League One",
+   "p": 13,
+   "cs": 4,
+   "g2": 4
+  },
+  {
+   "club": "Huddersfield",
+   "league": "League One",
+   "p": 14,
+   "cs": 4,
+   "g2": 9
+  },
+  {
+   "club": "Leicester",
+   "league": "League One",
+   "p": 13,
+   "cs": 4,
+   "g2": 6
+  },
+  {
+   "club": "Leyton Orient",
+   "league": "League One",
+   "p": 13,
+   "cs": 6,
+   "g2": 5
+  },
+  {
+   "club": "Luton",
+   "league": "League One",
+   "p": 14,
+   "cs": 2,
+   "g2": 9
+  },
+  {
+   "club": "Mansfield",
+   "league": "League One",
+   "p": 13,
+   "cs": 3,
+   "g2": 6
+  },
+  {
+   "club": "Milton Keynes Dons",
+   "league": "League One",
+   "p": 13,
+   "cs": 3,
+   "g2": 5
+  },
+  {
+   "club": "Notts County",
+   "league": "League One",
+   "p": 12,
+   "cs": 2,
+   "g2": 4
+  },
+  {
+   "club": "Oxford",
+   "league": "League One",
+   "p": 13,
+   "cs": 5,
+   "g2": 7
+  },
+  {
+   "club": "Peterboro",
+   "league": "League One",
+   "p": 13,
+   "cs": 1,
+   "g2": 3
+  },
+  {
+   "club": "Plymouth",
+   "league": "League One",
+   "p": 14,
+   "cs": 4,
+   "g2": 7
+  },
+  {
+   "club": "Reading",
+   "league": "League One",
+   "p": 14,
+   "cs": 5,
+   "g2": 7
+  },
+  {
+   "club": "Sheffield Weds",
+   "league": "League One",
+   "p": 13,
+   "cs": 3,
+   "g2": 6
+  },
+  {
+   "club": "Stevenage",
+   "league": "League One",
+   "p": 12,
+   "cs": 3,
+   "g2": 5
+  },
+  {
+   "club": "Stockport",
+   "league": "League One",
+   "p": 14,
+   "cs": 5,
+   "g2": 7
+  },
+  {
+   "club": "Wigan",
+   "league": "League One",
+   "p": 14,
+   "cs": 3,
+   "g2": 3
+  },
+  {
+   "club": "Wycombe",
+   "league": "League One",
+   "p": 13,
+   "cs": 3,
+   "g2": 6
+  },
+  {
+   "club": "Accrington",
+   "league": "League Two",
+   "p": 14,
+   "cs": 4,
+   "g2": 7
+  },
+  {
+   "club": "Barnet",
+   "league": "League Two",
+   "p": 13,
+   "cs": 0,
+   "g2": 9
+  },
+  {
+   "club": "Bristol Rvs",
+   "league": "League Two",
+   "p": 14,
+   "cs": 5,
+   "g2": 4
+  },
+  {
+   "club": "Cheltenham",
+   "league": "League Two",
+   "p": 14,
+   "cs": 1,
+   "g2": 7
+  },
+  {
+   "club": "Chesterfield",
+   "league": "League Two",
+   "p": 14,
+   "cs": 2,
+   "g2": 6
+  },
+  {
+   "club": "Colchester",
+   "league": "League Two",
+   "p": 13,
+   "cs": 2,
+   "g2": 3
+  },
+  {
+   "club": "Crawley Town",
+   "league": "League Two",
+   "p": 12,
+   "cs": 1,
+   "g2": 4
+  },
+  {
+   "club": "Crewe",
+   "league": "League Two",
+   "p": 14,
+   "cs": 4,
+   "g2": 3
+  },
+  {
+   "club": "Exeter",
+   "league": "League Two",
+   "p": 14,
+   "cs": 7,
+   "g2": 3
+  },
+  {
+   "club": "Fleetwood Town",
+   "league": "League Two",
+   "p": 14,
+   "cs": 4,
+   "g2": 5
+  },
+  {
+   "club": "Gillingham",
+   "league": "League Two",
+   "p": 14,
+   "cs": 4,
+   "g2": 5
+  },
+  {
+   "club": "Grimsby",
+   "league": "League Two",
+   "p": 14,
+   "cs": 4,
+   "g2": 8
+  },
+  {
+   "club": "Newport County",
+   "league": "League Two",
+   "p": 14,
+   "cs": 4,
+   "g2": 6
+  },
+  {
+   "club": "Northampton",
+   "league": "League Two",
+   "p": 13,
+   "cs": 4,
+   "g2": 2
+  },
+  {
+   "club": "Oldham",
+   "league": "League Two",
+   "p": 14,
+   "cs": 4,
+   "g2": 3
+  },
+  {
+   "club": "Port Vale",
+   "league": "League Two",
+   "p": 12,
+   "cs": 4,
+   "g2": 1
+  },
+  {
+   "club": "Rochdale",
+   "league": "League Two",
+   "p": 14,
+   "cs": 4,
+   "g2": 6
+  },
+  {
+   "club": "Rotherham",
+   "league": "League Two",
+   "p": 14,
+   "cs": 1,
+   "g2": 5
+  },
+  {
+   "club": "Salford",
+   "league": "League Two",
+   "p": 14,
+   "cs": 4,
+   "g2": 8
+  },
+  {
+   "club": "Shrewsbury",
+   "league": "League Two",
+   "p": 14,
+   "cs": 3,
+   "g2": 5
+  },
+  {
+   "club": "Swindon",
+   "league": "League Two",
+   "p": 14,
+   "cs": 2,
+   "g2": 5
+  },
+  {
+   "club": "Tranmere",
+   "league": "League Two",
+   "p": 14,
+   "cs": 4,
+   "g2": 6
+  },
+  {
+   "club": "Walsall",
+   "league": "League Two",
+   "p": 13,
+   "cs": 6,
+   "g2": 7
+  },
+  {
+   "club": "York",
+   "league": "League Two",
+   "p": 14,
+   "cs": 3,
+   "g2": 7
+  }
+ ]
+}
