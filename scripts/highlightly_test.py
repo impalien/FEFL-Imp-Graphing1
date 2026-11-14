@@ -6,7 +6,7 @@ for recent matches. Prints a report to the Actions log. It never prints your key
 Uses roughly 25-35 requests (the free plan allows about 100 a day).
 """
 import json, os, sys, time, urllib.error, urllib.parse, urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 BASE = "https://soccer.highlightly.net"
 KEY = os.environ.get("HIGHLIGHTLY_API_KEY", "").strip()
@@ -80,6 +80,18 @@ def present(data):
     return {s for s, words in WANT.items() if any(w in n for n in ns for w in words)}
 
 
+def when(m):
+    for k in ("date", "startTime", "kickoff", "kickOff", "time", "utcDate"):
+        v = m.get(k)
+        if isinstance(v, str) and len(v) >= 10:
+            try:
+                t = datetime.fromisoformat(v.replace("Z", "+00:00"))
+                return t if t.tzinfo else t.replace(tzinfo=timezone.utc)
+            except ValueError:
+                pass
+    return None
+
+
 def unwrap(d):
     return d.get("data", d) if isinstance(d, dict) else d
 
@@ -116,27 +128,35 @@ def main():
         print("None of the three divisions came back. The free plan may hide them. Quota left:", left[0])
         return 0
     summary = {}
+    now = datetime.now(timezone.utc)
     for label, lg in chosen.items():
         print("\n=== 2. %s (id %s) ===" % (label, lg.get("id")))
-        st, d = get("/matches", {"leagueId": lg.get("id"), "season": SEASON, "limit": 100})
-        ms = unwrap(d) if st == 200 else []
-        ms = [m for m in ms if isinstance(m, dict) and m.get("id")]
-        now = datetime.now(timezone.utc).isoformat()
-        past = sorted([m for m in ms if str(m.get("date", "")) <= now], key=lambda m: str(m.get("date", "")), reverse=True)
-        print("Matches returned: %d, already played: %d" % (len(ms), len(past)))
-        if not past:
+        played, shown = [], False
+        for back in range(1, 13):
+            day = (now - timedelta(days=back)).date().isoformat()
+            st, d = get("/matches", {"leagueId": lg.get("id"), "date": day, "limit": 100})
+            items = [m for m in (unwrap(d) if st == 200 else []) if isinstance(m, dict) and m.get("id")]
+            if items and not shown:
+                print("  SAMPLE MATCH (%s):" % day, json.dumps(items[0])[:500])
+                shown = True
+            played += [m for m in items if (when(m) or now) < now - timedelta(hours=3)]
+            print("  %s: %d matches" % (day, len(items)))
+            if len(played) >= 2:
+                break
+        print("Finished matches found: %d" % len(played))
+        if not played:
             summary[label] = None
             continue
         seen = {}
-        for m in past[:2]:
-            for ep in ("box-score", "lineups", "statistics"):
+        for n, m in enumerate(played[:2]):
+            for ep in ("box-score", "lineups") + (("statistics",) if n == 0 else ()):
                 st, d = get("/%s/%s" % (ep, m["id"]))
                 if st != 200:
                     print("  /%s/%s -> HTTP %s %s" % (ep, m["id"], st, str(d)[:120]))
                     continue
                 got = present(d)
-                for s in got:
-                    seen.setdefault(s, set()).add(ep)
+                for s_ in got:
+                    seen.setdefault(s_, set()).add(ep)
                 print("  /%s/%s -> found: %s" % (ep, m["id"], ", ".join(sorted(got)) or "nothing"))
                 if ep == "box-score":
                     for sd in stat_dicts(d)[:1]:
