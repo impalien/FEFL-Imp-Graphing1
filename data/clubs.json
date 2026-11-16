@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-13T20:53:18+00:00",
+ "updated": "2026-11-16T13:29:14+00:00",
  "season": "2627",
  "source": "football-data.co.uk",
  "clubs": [
@@ -174,21 +174,21 @@
   {
    "club": "AFC Wimbledon",
    "league": "League One",
-   "p": 13,
-   "cs": 5,
+   "p": 14,
+   "cs": 6,
    "g2": 1
   },
   {
    "club": "Barnsley",
    "league": "League One",
-   "p": 12,
+   "p": 13,
    "cs": 1,
    "g2": 2
   },
   {
    "club": "Blackpool",
    "league": "League One",
-   "p": 12,
+   "p": 13,
    "cs": 2,
    "g2": 5
   },
@@ -209,9 +209,9 @@
   {
    "club": "Burton",
    "league": "League One",
-   "p": 14,
+   "p": 15,
    "cs": 2,
-   "g2": 6
+   "g2": 7
   },
   {
    "club": "Cambridge",
@@ -265,9 +265,9 @@
   {
    "club": "Milton Keynes Dons",
    "league": "League One",
-   "p": 13,
+   "p": 14,
    "cs": 3,
-   "g2": 5
+   "g2": 6
   },
   {
    "club": "Notts County",
@@ -293,23 +293,23 @@
   {
    "club": "Plymouth",
    "league": "League One",
-   "p": 14,
+   "p": 15,
    "cs": 4,
    "g2": 7
   },
   {
    "club": "Reading",
    "league": "League One",
-   "p": 14,
+   "p": 15,
    "cs": 5,
    "g2": 7
   },
   {
    "club": "Sheffield Weds",
    "league": "League One",
-   "p": 13,
-   "cs": 3,
-   "g2": 6
+   "p": 14,
+   "cs": 4,
+   "g2": 7
   },
   {
    "club": "Stevenage",
@@ -321,16 +321,16 @@
   {
    "club": "Stockport",
    "league": "League One",
-   "p": 14,
+   "p": 15,
    "cs": 5,
-   "g2": 7
+   "g2": 8
   },
   {
    "club": "Wigan",
    "league": "League One",
-   "p": 14,
+   "p": 15,
    "cs": 3,
-   "g2": 3
+   "g2": 4
   },
   {
    "club": "Wycombe",
@@ -342,9 +342,9 @@
   {
    "club": "Accrington",
    "league": "League Two",
-   "p": 14,
+   "p": 15,
    "cs": 4,
-   "g2": 7
+   "g2": 8
   },
   {
    "club": "Barnet",
@@ -356,30 +356,30 @@
   {
    "club": "Bristol Rvs",
    "league": "League Two",
-   "p": 14,
+   "p": 15,
    "cs": 5,
    "g2": 4
   },
   {
    "club": "Cheltenham",
    "league": "League Two",
-   "p": 14,
+   "p": 15,
    "cs": 1,
    "g2": 7
   },
   {
    "club": "Chesterfield",
    "league": "League Two",
-   "p": 14,
-   "cs": 2,
-   "g2": 6
+   "p": 15,
+   "cs": 3,
+   "g2": 7
   },
   {
    "club": "Colchester",
    "league": "League Two",
-   "p": 13,
-   "cs": 2,
-   "g2": 3
+   "p": 14,
+   "cs": 3,
+   "g2": 4
   },
   {
    "club": "Crawley Town",
@@ -391,70 +391,70 @@
   {
    "club": "Crewe",
    "league": "League Two",
-   "p": 14,
+   "p": 15,
    "cs": 4,
-   "g2": 3
+   "g2": 4
   },
   {
    "club": "Exeter",
    "league": "League Two",
-   "p": 14,
-   "cs": 7,
+   "p": 15,
+   "cs": 8,
    "g2": 3
   },
   {
    "club": "Fleetwood Town",
    "league": "League Two",
-   "p": 14,
-   "cs": 4,
+   "p": 15,
+   "cs": 5,
    "g2": 5
   },
   {
    "club": "Gillingham",
    "league": "League Two",
-   "p": 14,
+   "p": 15,
    "cs": 4,
    "g2": 5
   },
   {
    "club": "Grimsby",
    "league": "League Two",
-   "p": 14,
+   "p": 15,
    "cs": 4,
-   "g2": 8
+   "g2": 9
   },
   {
    "club": "Newport County",
    "league": "League Two",
-   "p": 14,
+   "p": 15,
    "cs": 4,
-   "g2": 6
+   "g2": 7
   },
   {
    "club": "Northampton",
    "league": "League Two",
-   "p": 13,
+   "p": 14,
    "cs": 4,
    "g2": 2
   },
   {
    "club": "Oldham",
    "league": "League Two",
-   "p": 14,
+   "p": 15,
    "cs": 4,
    "g2": 3
   },
   {
    "club": "Port Vale",
    "league": "League Two",
-   "p": 12,
+   "p": 13,
    "cs": 4,
-   "g2": 1
+   "g2": 2
   },
   {
    "club": "Rochdale",
    "league": "League Two",
-   "p": 14,
+   "p": 15,
    "cs": 4,
    "g2": 6
   },
@@ -468,28 +468,28 @@
   {
    "club": "Salford",
    "league": "League Two",
-   "p": 14,
+   "p": 15,
    "cs": 4,
    "g2": 8
   },
   {
    "club": "Shrewsbury",
    "league": "League Two",
-   "p": 14,
+   "p": 15,
    "cs": 3,
-   "g2": 5
+   "g2": 6
   },
   {
    "club": "Swindon",
    "league": "League Two",
-   "p": 14,
+   "p": 15,
    "cs": 2,
    "g2": 5
   },
   {
    "club": "Tranmere",
    "league": "League Two",
-   "p": 14,
+   "p": 15,
    "cs": 4,
    "g2": 6
   },
@@ -503,8 +503,8 @@
   {
    "club": "York",
    "league": "League Two",
-   "p": 14,
-   "cs": 3,
+   "p": 15,
+   "cs": 4,
    "g2": 7
   }
  ]
