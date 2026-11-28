@@ -41,16 +41,17 @@ test('multiplier: shrinks small samples, clamps, and is 1 without data', () => {
   assert.equal(multiplier(mk(20, 400), lg, 'MID', 'interceptions'), 1.6);
 });
 
-test('collection schedule: 6h when quiet, 25 min on matchdays, forced and first runs', () => {
+test('collection schedule: hourly when quiet, every 5 min on matchdays, forced and first runs', () => {
   const r = round([{ id: 1, home: 1, away: 2 }]); r.status = 'open'; r.completedAt = null;
   const kick = new Date('2026-08-15T14:00:00Z');
   const last = (m: number) => new Date(kick.getTime() + 60e3 * m);
   assert.equal(collectionDue([r], null, kick).due, true);
   assert.equal(collectionDue([r], last(70), last(100)).due, true);            // matchday, 30 min gap
-  assert.equal(collectionDue([r], last(95), last(100)).due, false);
+  assert.equal(collectionDue([r], last(99), last(100)).due, false);   // matchday, only 1 min since the last run
+  assert.equal(collectionDue([r], last(95), last(100)).due, true);    // matchday, 5 min gap
   const quiet = new Date('2026-08-20T10:00:00Z');
-  assert.equal(collectionDue([r], new Date(quiet.getTime() - 3 * 3600e3), quiet).due, false);
-  assert.equal(collectionDue([r], new Date(quiet.getTime() - 6 * 3600e3), quiet).due, true);
+  assert.equal(collectionDue([r], new Date(quiet.getTime() - 30 * 60e3), quiet).due, false);
+  assert.equal(collectionDue([r], new Date(quiet.getTime() - 2 * 3600e3), quiet).due, true);
   assert.equal(collectionDue([r], new Date(quiet.getTime() - 60e3), quiet, true).due, true);
 });
 

@@ -31,8 +31,9 @@ If the run shows a red cross, copy the last 10 lines of the log and send them to
 permission in step 3.3 not being set.
 
 ## What happens after that, on its own
-* Every 6 hours: one collection.
-* On matchdays (Sun, Tue, Wed, Fri, Sat): GitHub wakes the job every 30 minutes and it collects whenever a game is on, results are settling, or a gameweek has just completed.
+* Every hour: one collection.
+* On matchdays (Sun, Tue, Wed, Fri, Sat): GitHub wakes the job every 5 minutes (its fastest setting) and it collects whenever a game is on, results are settling, or a gameweek has just completed. GitHub sometimes starts scheduled jobs a few minutes late, so expect updates roughly every 5 to 10 minutes during games.
+* On quiet wake-ups the job stops straight away, so it costs very little.
 * Each collection saves a snapshot only for things that changed, so history builds up without waste. Nothing is ever overwritten.
 
 ## When will the "conceded" tables fill up?
